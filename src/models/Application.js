@@ -1,6 +1,6 @@
 import Config from './Config';
 
-class Application {
+export default class Application {
   /**
    * Holds class instance
    *
@@ -33,5 +33,3 @@ class Application {
     return this;
   }
 }
-
-export default new Application();

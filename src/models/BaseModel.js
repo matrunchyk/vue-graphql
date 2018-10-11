@@ -7,11 +7,11 @@ import {
   getGQLDocumentName,
   getGQLDocument,
   defineProperties,
-  cloneDeep
+  cloneDeep,
+  getApplication,
 } from '../lib/utils';
 import Collection from './Collection';
 import Form from './Forms/Form';
-import Application from './Application';
 
 /**
  * Class BaseModel
@@ -50,7 +50,7 @@ class BaseModel {
     // Object.defineProperties(this, Object.getOwnPropertyDescriptors(params));
     Object.assign(this, this.defaults, params);
     this.init();
-    this.application = Application;
+    this.application = getApplication();
   }
 
   // Static getters

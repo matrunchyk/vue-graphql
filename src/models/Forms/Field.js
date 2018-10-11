@@ -1,6 +1,8 @@
 import Collection from '../Collection';
-import Application from '../Application';
-import { spawn } from '../../lib/utils';
+import {
+  spawn,
+  getApplication,
+} from '../../lib/utils';
 
 export default class Field {
   chips = false;
@@ -20,6 +22,7 @@ export default class Field {
   type = '';
   validations = {};
   value = null;
+  application = getApplication();
 
   constructor({
     chips = false,
@@ -51,6 +54,7 @@ export default class Field {
     this.sourceType = sourceType;
     this.type = type;
     this.validations = validations;
+
     this.setOptions();
   }
 
@@ -77,7 +81,7 @@ export default class Field {
   async getOptionsFromFile() {
     this.setLoading();
     try {
-      const items = await import(`${Application.config.dataPath}/${this.source}`);
+      const items = await import(`${this.application.config.dataPath}/${this.source}`);
 
       this.setLoading(false);
       return items;
@@ -91,7 +95,7 @@ export default class Field {
   async getCollection() {
     this.setLoading();
     try {
-      const { default: model } = await import(`${Application.config.dataPath}${this.source}`);
+      const { default: model } = await import(`${this.application.config.dataPath}${this.source}`);
       const { collection } = await model.get();
 
       this.setLoading(false);

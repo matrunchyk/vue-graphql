@@ -1,5 +1,5 @@
+import vue from 'vue';
 import Exceptions from '../models/Exceptions';
-import Application from '../models/Application';
 
 /**
  * @module Utils
@@ -14,6 +14,15 @@ import Application from '../models/Application';
  */
 function version() {
   return process.env.LIBRARY_VERSION;
+}
+
+/**
+ * Returns application
+ *
+ * @returns {string}
+ */
+function getApplication() {
+  return vue.$application || {};
 }
 
 /**
@@ -117,10 +126,12 @@ function humanBytes(bytes) {
  * @returns {function(): (Promise<*>|*)}
  */
 function getGQL(path) {
-  if (!Application || !Application.config | !Application.config.graphqlPath) {
+  const application = getApplication();
+
+  if (!application || !application.config | !application.config.graphqlPath) {
     throw new Exceptions.ConfigurationException('Configuration error. Please ensure that "graphqlPath" is set.');
   }
-  const { graphqlPath } = Application.config;
+  const { graphqlPath } = application.config;
 
   return import(/* webpackChunkName: "gql/[request]" */ `${graphqlPath}/${path}.graphql`);
 }
@@ -449,6 +460,7 @@ function sleep(seconds = 1) {
 
 export {
   version,
+  getApplication,
   isProd,
   isDev,
   isTest,

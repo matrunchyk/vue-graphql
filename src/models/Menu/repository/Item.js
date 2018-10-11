@@ -1,5 +1,5 @@
-import eventBus from 'Lib/eventBus';
-import Application from '../../Application';
+import eventBus from '../../../lib/eventBus';
+import { getApplication } from '../../../lib/utils';
 
 class Item {
   id = '';
@@ -26,7 +26,7 @@ class Item {
   // Methods
   getBoundProps() {
     let { route } = this;
-    const { config: { vuex }} = Application;
+    const { config: { vuex }} = getApplication();
 
     if (route && route.path) {
       route = Object.assign(route, { params: { key: vuex.getters['route/key'] } });
