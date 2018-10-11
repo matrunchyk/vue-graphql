@@ -1,7 +1,7 @@
 /* global describe, it, before */
 
 import chai from 'chai';
-import { BaseModel, Exception } from '../lib/vue-graphql-models.js';
+import { BaseModel, Exceptions } from '../lib/vue-graphql-models.js';
 
 chai.expect();
 
@@ -22,7 +22,7 @@ describe('Given an instance of my BaseModel library', () => {
 
 describe('Given an instance of my InvalidArgumentException library', () => {
   before(() => {
-    lib = new Exception.InvalidArgumentException('This is a message');
+    lib = new Exceptions.InvalidArgumentException('This is a message');
   });
   describe('when I need the message', () => {
     it('should return the message', () => {

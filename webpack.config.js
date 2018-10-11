@@ -44,6 +44,10 @@ const config = {
   resolve: {
     modules: [path.resolve('./node_modules'), path.resolve('./src')],
     extensions: ['.json', '.js']
+  },
+  externals: {
+    vue: 'vue',
+    moment: 'moment'
   }
 };
 
