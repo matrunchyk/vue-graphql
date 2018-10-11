@@ -26,6 +26,25 @@ function getApplication() {
 }
 
 /**
+ * Checks if application is configured
+ *
+ * @returns {Config}
+ */
+function getConfig() {
+  const application = getApplication();
+
+  if (!application || !application.config) {
+    throw new Exceptions.ConfigurationException(`Configuration error.
+    Please ensure that your application is configured.`);
+  }
+
+  if (typeof application.config.gqlImporter !== 'function') {
+    throw new Exceptions.ConfigurationException('Configuration error. Please ensure that "gqlImporter" is set.');
+  }
+  return application.config;
+}
+
+/**
  * Returns true if production environment
  *
  * @returns {boolean}
@@ -126,14 +145,7 @@ function humanBytes(bytes) {
  * @returns {function(): (Promise<*>|*)}
  */
 function getGQL(path) {
-  const application = getApplication();
-
-  if (!application || !application.config | !application.config.graphqlPath) {
-    throw new Exceptions.ConfigurationException('Configuration error. Please ensure that "graphqlPath" is set.');
-  }
-  const { graphqlPath } = application.config;
-
-  return import(/* webpackChunkName: "gql/[request]" */ `${graphqlPath}/${path}.graphql`);
+  return getConfig().gqlImporter(path);
 }
 
 /* HTTP */
@@ -461,6 +473,7 @@ function sleep(seconds = 1) {
 export {
   version,
   getApplication,
+  getConfig,
   isProd,
   isDev,
   isTest,

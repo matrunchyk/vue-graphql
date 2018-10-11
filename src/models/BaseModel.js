@@ -438,8 +438,6 @@ class BaseModel {
 
   setLoading(loading = true) {
     this.loading = loading;
-    // noinspection JSUnresolvedFunction
-    this.application.config.vuex.dispatch('app/setLoading', { loading });
   }
 
   // Hooks

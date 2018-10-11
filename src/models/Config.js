@@ -1,7 +1,4 @@
 export default class Config {
-  graphqlPath = 'Gql';
-  dataPath = 'Data';
-  modelsPath = 'Models';
   vue = {
     $route: {
       fullPath: 'unconfigured',
@@ -15,4 +12,8 @@ export default class Config {
     mutate: () => Promise.reject('Unconfigured'),
     query: () => Promise.reject('Unconfigured')
   };
+  gqlImporter = () => {};
+  dataImporter = () => {};
+  modelImporter = () => {};
+  viewImporter = () => {};
 }
