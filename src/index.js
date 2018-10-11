@@ -1,6 +1,6 @@
 import BaseModel from './models/BaseModel.js';
+import Exception from './models/exceptions';
 
 export default BaseModel;
-export * from './models/exceptions';
-export { BaseModel };
+export { BaseModel, Exception };
 
