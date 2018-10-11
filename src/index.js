@@ -1,6 +1,9 @@
+// Base
 import BaseModel from './models/BaseModel.js';
 import Exceptions from './models/Exceptions';
 import Collection from './models/Collection';
+import Application from './models/Application';
+import Config from './models/Config';
 
 // Menu
 import Repository from './models/Menu/repository/Repository';
@@ -21,6 +24,8 @@ export {
   BaseModel,
   Exceptions,
   Collection,
+  Application,
+  Config,
 
   Repository,
   Item,
