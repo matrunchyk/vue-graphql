@@ -1,6 +1,6 @@
 {
   "name": "vue-graphql-models",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "Universal library which helps to build OOP-driven GraphQL based models for Vue components. Influenced by Laravel Eloquent Models & Collections.",
   "main": "lib/vue-graphql-models.js",
   "scripts": {
