@@ -1,4 +1,4 @@
-import vue from 'vue';
+import Vue from 'vue';
 import Exceptions from '../models/Exceptions';
 
 /**
@@ -22,7 +22,7 @@ function version() {
  * @returns {string}
  */
 function getApplication() {
-  return vue.$application || {};
+  return Vue.prototype.$application || {};
 }
 
 /**
