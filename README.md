@@ -3,7 +3,7 @@
 Universal library which helps to build OOP-driven GraphQL based models for Vue components.
 Influenced by Laravel Eloquent Models & Collections.
 
-![Travis](https://travis-ci.org/digitalidea/vue-graphql-models.svg?branch=master)
+![Travis](https://api.travis-ci.org/digitalideastudio/vue-graphql-models.svg?branch=master)
 
 ## Features
 
