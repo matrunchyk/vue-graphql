@@ -1,4 +1,4 @@
-import InvalidArgumentException from '../models/Exceptions/InvalidArgumentException';
+import Exceptions from '../models/Exceptions';
 import Application from '../models/Application';
 
 /**
@@ -6,6 +6,15 @@ import Application from '../models/Application';
  */
 
 /* Environment */
+
+/**
+ * Returns library version
+ *
+ * @returns {string}
+ */
+function version() {
+  return process.env.LIBRARY_VERSION;
+}
 
 /**
  * Returns true if production environment
@@ -108,7 +117,12 @@ function humanBytes(bytes) {
  * @returns {function(): (Promise<*>|*)}
  */
 function getGQL(path) {
-  return import(/* webpackChunkName: "gql/[request]" */ `${Application.config.graphqlPath}/${path}.graphql`);
+  if (!Application || !Application.config | !Application.config.graphqlPath) {
+    throw new Exceptions.ConfigurationException('Configuration error. Please ensure that "graphqlPath" is set.');
+  }
+  const { graphqlPath } = Application.config;
+
+  return import(/* webpackChunkName: "gql/[request]" */ `${graphqlPath}/${path}.graphql`);
 }
 
 /* HTTP */
@@ -360,11 +374,12 @@ function pick(source = {}, selected = []) {
  */
 function getGQLDocumentName(document, callerClass = 'model class') {
   if (
+    !document ||
     !document.definitions ||
     !Array.isArray(document.definitions) ||
     !document.definitions.length
   ) {
-    throw new InvalidArgumentException(`Invalid GraphQL document specified.
+    throw new Exceptions.InvalidArgumentException(`Invalid GraphQL document specified.
     Did you forget to add query or mutation to ${callerClass}?`);
   }
   const definition = document.definitions.find(def => def.kind === 'OperationDefinition');
@@ -433,6 +448,7 @@ function sleep(seconds = 1) {
 }
 
 export {
+  version,
   isProd,
   isDev,
   isTest,

@@ -17,7 +17,7 @@ import Application from './Application';
  * Class BaseModel
  */
 class BaseModel {
-  __typename = '';
+  __typename = 'Base';
   _key = '';
   mutationCreate = {};
   mutationUpdate = {};
