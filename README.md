@@ -12,7 +12,10 @@ Influenced by Laravel Eloquent Models & Collections.
 * All arrays retrieved from GraphQL will be hydrated with respectful collections of models.
 * Supports lazy-loading of GraphQL documents.
 * Supports evens & hooks for customization.
-* Has built-in FormWizard factory so you can create simple or complex Forms.  
+* Has built-in FormWizard factory so you can create simple or complex Forms.
+* Has built-in support for your application's menus in OOP manner. 
+
+###### Internally:  
 * Webpack 4 based.
 * ES6 as a source.
 * Exports in a [umd](https://github.com/umdjs/umd) format so library works everywhere.
@@ -27,7 +30,16 @@ or
 
 `yarn add vue-graphql-models`
 
-## Usage
+## Basic Usage
+
+Intro:
+- Usually website or webapp consists from a page with list of models (list of products, list of categories, list of any other models) as well as page with a single items (or multiple items). The item here is called as `model` and the list of items is a `collection` of `models`.
+- When Vue component is rendering, it usually doesn't have data yet. To avoid errors, we can substitute an empty `Collection` by just using model's method `.emptyCollection()`. To have the same effect for empty model, you can use `.empty()`.
+- You can specify your model class in your Vue component's prop validation.
+- Each collection has the same methods as Laravel Collection class (credits to [collect.js](https://github.com/ecrmnn/collect.js/))
+- Each model can obtain data using specific GraphQL queries and mutations. The only requirement is a folder structure (which is also great to avoid various mistakes and always keep a consistency).
+- Each model can have default values for its properties
+- Properties can be automatically converted to other objects, for example, array values can be automatically converted to a subcollection of other models.   
 
 1. Create a new Model which you want to use in your Vue component, i.e. `Fruit` by extending the imported `BaseModel` class:
 > Fruit.js
@@ -158,6 +170,255 @@ export default {
 </script>
 ```
 
+## How to use build an application Menu
+
+- Menu is driven by `Item` and `Repository` models.
+- Each route in your app can have its own set of menu items.
+- In this library `Repository` pattern is used so first you'l have to create sets of items in your repository for further use.
+- Items can be combined in groups (recommended approach).
+- In your route declarations you can specify which group to use.
+
+1. In order to create a menu repository, create a folder `src/menu/categories` folder. Here will be stored menu categories which will help you to distinguish menu items for further using them in groups (pages). For example, your website has Products and Customers pages, so it's recommended to create two files: `products.js` and `customers.js`. Each file contains a list of `Item`s:
+    > src/menu/categories/products.js
+    ```
+    import { Item } from 'vue-graphql-models';
+    
+    export default [
+      new Item({
+        id: 'productCreate',
+        title: 'Create Product',
+        subtitle: 'Create a new product',
+        icon: 'product_new',
+      }),
+      new Item({
+        id: 'productDelete',
+        title: 'Delete Product',
+        subtitle: 'Deletes the product',
+        icon: 'trash',
+      }),
+      new Item({
+        id: 'productEdit',
+        title: 'Edit Product',
+        subtitle: 'Edit the product',
+        icon: 'pencil',
+      }),
+      new Item({
+        id: 'categoryCreate',
+        title: 'Create Category',
+        subtitle: 'Create a new category',
+        icon: 'create_new_folder',
+      }),
+      // .. all possible product-related items
+    ];
+    ```
+2. Build your menu repository using all these categories defined in previous step:
+    > src/menu/MenuRepository.js
+    ```
+    import { Repository } from 'vue-graphql-models';
+    
+    import products from '@/menu/categories/products';
+    import customers from '@/menu/categories/customers';
+    
+    const MenuRepository = new Repository([
+      ...products,
+      ...customers,
+    ]);
+    
+    export default MenuRepository;
+    ```
+
+3. Since you already have a menu repository with all conveniently categorized items, now you can create menu groups to referring to them in your `vue-route`'s route definition files. You can create as many menu groups as you want. Create a folder `src/menu/groups` where all menu groups to be kept. A few examples of a group files:
+    > src/menu/groups/productList.js
+    ```
+    import MenuRepository from '../../MenuRepository';
+    
+    export default [
+      MenuRepository.productCreate,
+      MenuRepository.categoryCreate,
+      MenuRepository.productHelp,
+    ];
+    ```
+    
+    > src/menu/groups/customerList.js
+    ```
+    import MenuRepository from '../../MenuRepository';
+    
+    export default [
+      MenuRepository.customerCreate,
+      MenuRepository.customerOrders,
+      MenuRepository.customerCarts,
+      MenuRepository.customerHelp,
+    ];
+    ```
+4. Since you can have even more than 1 menu, it's better to create a folder per each menu, so the whole structure would look like the following:
+    ```
+    /src
+      |
+     menu
+      |
+      |- MenuRepository.js
+      |
+      |- categories
+      |    |
+      |    |- products.js
+      |    |- customers.js
+      |    |- ...
+      |
+      |- groups
+      |    |
+      |    |- productList.js
+      |    |- productPage.js
+      |    |- customerList.js
+      |    |- customerPage.js
+      |    |- helpPage.js
+      |    |- ...
+      |
+      |- leftMenu.js
+      |- topMenu.js
+      |- otherMenu.js
+      |- ...
+    ```  
+    
+    For example, how `leftMenu.js` would look like:
+    ```
+    import productList from './groups/productList';
+    import productPage from './groups/productPage';
+    import customerList from './groups/customerList';
+    import customerPage from './groups/customerPage';
+    
+    export default {
+      productList,
+      productPage,
+      customerList,
+      customerPage,
+    }
+    ```
+    
+    and how `topMenu` would look like:
+    ```
+    import helpPage from './groups/helpPage';
+    import otherPage from './groups/otherPage';
+    import profilePage from './groups/profilePage';
+    import systemPage from './groups/systemPage';
+    
+    export default {
+      helpPage,
+      otherPage,
+      profilePage,
+      systemPage,
+    }
+    ```
+
+5. Whew! Almost done. Now all you need is just add a reference to a particular route definition:
+    > src/router/routes/productList.js
+    ```
+    import { Util } from 'vue-graphql-models';
+    import { leftMenu } from '@/menu/leftMenu';
+    
+    export default {
+      path: '/products',
+      component: Util.getView('productList'),
+      name: 'products',
+      meta: {
+        leftMenu: leftMenu.productList,
+      },
+    };
+    ```
+    
+    Alternatively, you can skip step 4 and use it directly like this:
+    > src/router/routes/productList.js
+    ```
+    import { Util } from 'vue-graphql-models';
+    import productList from '@/menu/groups/productList';
+    
+    export default {
+      path: '/products',
+      component: Util.getView('productList'),
+      name: 'products',
+      meta: {
+        leftMenu: productList,
+      },
+    };
+    ```
+
+6. Congrats! Now your each route can have its own menu!
+    
+    BONUS TIP: If you are curious how to use it in your app, here is an example of component in Vuetify:
+    > LeftMenuDrawer.vue
+    ```
+    <template>
+      <ul
+        subheader
+        three-line
+        class="grey lighten-4"
+      >
+        <v-list-tile
+          v-for="(item, index) in menuItems"
+          :key="index"
+          v-bind="item.getBoundProps()"
+          avatar
+          active-class="grey--text text--darken-2"
+          class="grey--text text--darken-2 grey lighten-4"
+          v-on="item.boundListeners"
+        >
+          <v-list-tile-action>
+            <i
+              v-if="item.hasCustomIcon()"
+              :class="item.icon"
+              class="i custom-icon"
+            />
+            <v-icon
+              v-else
+              large
+            >
+              {{ item.icon }}
+            </v-icon>
+          </v-list-tile-action>
+  
+          <v-list-tile-content>
+            <v-list-tile-title
+              class="subheading"
+            >
+              {{ item.title }}
+            </v-list-tile-title>
+            <v-list-tile-sub-title
+              class="body-1"
+            >
+              {{ item.subtitle }}
+            </v-list-tile-sub-title>
+          </v-list-tile-content>
+        </v-list-tile>
+      </v-list>
+    </template>
+    
+    <script>
+    export default {
+      name: 'LeftMenuDrawer',
+      
+      menuItems() {
+        const menuItems = this.$route.meta.leftMenu || [];
+        
+        if (!menuItems.filter) {
+          console.group('DEBUG: menuItems.filter is not a function');
+          console.log(menuItems);
+          console.groupEnd();
+        }
+
+        const validItems = menuItems.filter(item => item);
+        const invalidCount = menuItems.length - validItems.length;
+        
+        if (invalidCount) {
+          const isAre = invalidCount > 1 ? 'are' : 'is';
+          console.warn(`Warning: ${invalidCount} of ${menuItems.length} menu items for current route ${isAre} invalid.`);
+        }
+        
+        return validItems;
+      },
+    };
+    </script>
+    ```
+
+
 ## Example
 
 See [example](https://github.com/digitalideastudio/vue-graphql-models-example) how to use this package.
@@ -167,4 +428,4 @@ See [example](https://github.com/digitalideastudio/vue-graphql-models-example) h
 Feel free to submit your pull-requests, ideas, proposals and bug reports!
  
 ### TODOs:
-- Add CodeSandbox example
+- Add CodeSandbox examples
