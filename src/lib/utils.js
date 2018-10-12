@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Exceptions from '../models/Exceptions';
+import pkg from '../../package';
 
 /**
  * @module Utils
@@ -13,7 +14,7 @@ import Exceptions from '../models/Exceptions';
  * @returns {string}
  */
 function version() {
-  return process.env.LIBRARY_VERSION;
+  return pkg.version;
 }
 
 /**
@@ -45,33 +46,6 @@ function getConfig() {
 }
 
 /**
- * Returns true if production environment
- *
- * @returns {boolean}
- */
-function isProd() {
-  return process.env.NODE_ENV === 'production';
-}
-
-/**
- * Returns true if dev environment
- *
- * @returns {boolean}
- */
-function isDev() {
-  return process.env.NODE_ENV === 'development';
-}
-
-/**
- * Returns true if test environment
- *
- * @returns {boolean}
- */
-function isTest() {
-  return process.env.NODE_ENV === 'testing';
-}
-
-/**
  * Returns true if mobile environment
  *
  * @returns {boolean}
@@ -79,16 +53,6 @@ function isTest() {
 /* istanbul ignore next */
 function isMobile/* istanbul ignore next */() {
   return !!navigator.userAgent.match(/(iPad)|(iPhone)|(iPod)|(android)|(webOS)/i);
-}
-
-/**
- * Returns an environment variable
- *
- * @param key {string} A key to be retrieved by
- * @returns {*}
- */
-function getEnv(key) {
-  return process.env[`VUE_APP_${key.toUpperCase()}`];
 }
 
 /* Strings */
@@ -485,11 +449,7 @@ export {
   version,
   getApplication,
   getConfig,
-  isProd,
-  isDev,
-  isTest,
   isMobile,
-  getEnv,
   getView,
   getGQL,
   getGQLDocument,
