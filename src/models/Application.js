@@ -1,6 +1,6 @@
 import Config from './Config';
 
-export default class Application {
+class Application {
   /**
    * Holds class instance
    *
@@ -19,17 +19,25 @@ export default class Application {
   /**
    * Class constructor
    *
-   * @param {Config} config - Configuration options
    * @returns {Application}
    */
-  constructor(config = new Config()) {
+  constructor() {
     if (Application.instance) {
       return Application.instance;
     }
     Application.instance = this;
 
-    this.config = config;
-
     return this;
   }
+
+  /**
+   * Configure application
+   *
+   * @param {Config} config
+   */
+  configure(config) {
+    this.config = config;
+  }
 }
+
+export default new Application();
