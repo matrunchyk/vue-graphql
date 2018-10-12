@@ -1,14 +1,14 @@
-import Item from '../Item';
+import MenuItem from '../MenuItem';
 
 export default [
-  new Item({
+  new MenuItem({
     id: 'exampleItem1',
     title: 'Example 1',
     subtitle: 'This is example 1',
     route: { name: 'example1' },
     icon: 'home'
   }),
-  new Item({
+  new MenuItem({
     id: 'exampleItem2',
     title: 'Example 2',
     subtitle: 'This is example 2',

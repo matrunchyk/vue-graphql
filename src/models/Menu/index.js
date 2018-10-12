@@ -1,7 +1,7 @@
-import Repository from './repository/Repository';
+import MenuRepository from './repository/MenuRepository';
 import example from './repository/items/example';
 
-const Menu = new Repository([
+const Menu = new MenuRepository([
   ...example
 ]);
 

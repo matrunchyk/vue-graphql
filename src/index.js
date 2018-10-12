@@ -6,8 +6,8 @@ import Application from './models/Application';
 import Config from './models/Config';
 
 // Menu
-import Repository from './models/Menu/repository/Repository';
-import Item from './models/Menu/repository/Item';
+import MenuRepository from './models/Menu/repository/MenuRepository';
+import MenuItem from './models/Menu/repository/MenuItem';
 import Menu from './models/Menu';
 
 // Forms
@@ -27,8 +27,8 @@ export {
   Application,
   Config,
 
-  Repository,
-  Item,
+  MenuRepository,
+  MenuItem,
   Menu,
 
   Field,

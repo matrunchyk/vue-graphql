@@ -1,7 +1,7 @@
 import eventBus from '../../../lib/eventBus';
 import { getApplication } from '../../../lib/utils';
 
-class Item {
+class MenuItem {
   id = '';
   title = 'Menu Item';
   subtitle = '';
@@ -52,4 +52,4 @@ class Item {
   }
 }
 
-export default Item;
+export default MenuItem;

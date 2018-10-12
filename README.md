@@ -172,37 +172,37 @@ export default {
 
 ## How to use build an application Menu
 
-- Menu is driven by `Item` and `Repository` models.
+- Menu is driven by `MenuItem` and `MenuRepository` models.
 - Each route in your app can have its own set of menu items.
-- In this library `Repository` pattern is used so first you'l have to create sets of items in your repository for further use.
+- In this library `MenuRepository` pattern is used so first you'l have to create sets of items in your repository for further use.
 - Items can be combined in groups (recommended approach).
 - In your route declarations you can specify which group to use.
 
-1. In order to create a menu repository, create a folder `src/menu/categories` folder. Here will be stored menu categories which will help you to distinguish menu items for further using them in groups (pages). For example, your website has Products and Customers pages, so it's recommended to create two files: `products.js` and `customers.js`. Each file contains a list of `Item`s:
+1. In order to create a menu repository, create a folder `src/menu/categories` folder. Here will be stored menu categories which will help you to distinguish menu items for further using them in groups (pages). For example, your website has Products and Customers pages, so it's recommended to create two files: `products.js` and `customers.js`. Each file contains a list of `MenuItem`s:
     > src/menu/categories/products.js
     ```
-    import { Item } from 'vue-graphql-models';
+    import { MenuItem } from 'vue-graphql-models';
     
     export default [
-      new Item({
+      new MenuItem({
         id: 'productCreate',
         title: 'Create Product',
         subtitle: 'Create a new product',
         icon: 'product_new',
       }),
-      new Item({
+      new MenuItem({
         id: 'productDelete',
         title: 'Delete Product',
         subtitle: 'Deletes the product',
         icon: 'trash',
       }),
-      new Item({
+      new MenuItem({
         id: 'productEdit',
         title: 'Edit Product',
         subtitle: 'Edit the product',
         icon: 'pencil',
       }),
-      new Item({
+      new MenuItem({
         id: 'categoryCreate',
         title: 'Create Category',
         subtitle: 'Create a new category',
@@ -214,12 +214,12 @@ export default {
 2. Build your menu repository using all these categories defined in previous step:
     > src/menu/MenuRepository.js
     ```
-    import { Repository } from 'vue-graphql-models';
+    import { MenuRepository as BaseMenuRepository } from 'vue-graphql-models';
     
     import products from '@/menu/categories/products';
     import customers from '@/menu/categories/customers';
     
-    const MenuRepository = new Repository([
+    const MenuRepository = new BaseMenuRepository([
       ...products,
       ...customers,
     ]);

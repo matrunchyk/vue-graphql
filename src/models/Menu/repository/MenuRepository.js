@@ -1,9 +1,9 @@
-class Repository {
+class MenuRepository {
   constructor(items = []) {
     this.items = items;
 
     return new Proxy(this, {
-      get: Repository.__get
+      get: MenuRepository.__get
     });
   }
 
@@ -18,4 +18,4 @@ class Repository {
   }
 }
 
-export default Repository;
+export default MenuRepository;
