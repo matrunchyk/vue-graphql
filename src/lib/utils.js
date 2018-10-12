@@ -1,6 +1,6 @@
-import Vue from 'vue';
 import Exceptions from '../models/Exceptions';
 import pkg from '../../package';
+import Application from '../models/Application';
 
 /**
  * @module Utils
@@ -20,10 +20,10 @@ function version() {
 /**
  * Returns application
  *
- * @returns {string}
+ * @returns {Application}
  */
 function getApplication() {
-  return Vue.prototype.$application || {};
+  return Application;
 }
 
 /**
