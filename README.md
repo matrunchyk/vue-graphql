@@ -429,3 +429,4 @@ Feel free to submit your pull-requests, ideas, proposals and bug reports!
  
 ### TODOs:
 - Add CodeSandbox examples
+- Rewrite to TypeScript
