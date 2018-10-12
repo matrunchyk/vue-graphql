@@ -148,6 +148,17 @@ function getGQL(path) {
   return getConfig().gqlImporter(path);
 }
 
+/**
+ * Lazy loads vue document by ${path}
+ *
+ * @param path {string} A path to the component
+ * @param jsView {boolean} Is view a JS file
+ * @returns {function(): (Promise<*>|*)}
+ */
+function getView(path, jsView = false) {
+  return getConfig().viewImporter(path, jsView);
+}
+
 /* HTTP */
 
 /**
@@ -479,6 +490,7 @@ export {
   isTest,
   isMobile,
   getEnv,
+  getView,
   getGQL,
   getGQLDocument,
   ucwords,
