@@ -51,6 +51,7 @@ class BaseModel {
     // Object.defineProperties(this, Object.getOwnPropertyDescriptors(params));
     Object.assign(this, this.defaults, params);
     this.init();
+    this.vue = Object.getPrototypeOf(this).vue;
   }
 
   // Static getters

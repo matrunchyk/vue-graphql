@@ -4,12 +4,9 @@ import MenuItem from '../models/Menu/repository/MenuItem';
 
 const VueGraphqlModels = {
   install(Vue, options = {}) {
-    options.$pluginInstalled = true;
     Object.assign(BaseModel.prototype, options.baseModel || {});
     Object.assign(Field.prototype, options.field || {});
     Object.assign(MenuItem.prototype, options.menuItem || {});
-
-    Object.assign(MenuItem.prototype, options.vue || {});
 
     if (options.dataLoader) {
       Object.assign(Field.prototype, options.dataLoader);
@@ -22,6 +19,20 @@ const VueGraphqlModels = {
     if (options.gqlLoader) {
       Object.assign(BaseModel.prototype, options.gqlLoader);
     }
+
+    Vue.mixin({
+      created() {
+        if (!Vue.prototype.$pluginInstalled) {
+          console.info(`VGM Installed successfully. Version: ${BaseModel.version}`);
+
+          Object.assign(BaseModel.prototype, { vue: this });
+          Object.assign(MenuItem.prototype, { vue: this });
+          Object.assign(Field.prototype, { vue: this });
+
+          Object.assign(Vue.prototype, { $pluginInstalled: true });
+        }
+      }
+    });
   }
 };
 
