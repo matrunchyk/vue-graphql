@@ -1,6 +1,5 @@
 import Exceptions from '../models/Exceptions';
 import pkg from '../../package';
-import Application from '../models/Application';
 
 /**
  * @module Utils
@@ -15,34 +14,6 @@ import Application from '../models/Application';
  */
 function version() {
   return pkg.version;
-}
-
-/**
- * Returns application
- *
- * @returns {Application}
- */
-function getApplication() {
-  return Application;
-}
-
-/**
- * Checks if application is configured
- *
- * @returns {Config}
- */
-function getConfig() {
-  const application = getApplication();
-
-  if (!application || !application.config) {
-    throw new Exceptions.ConfigurationException(`Configuration error.
-    Please ensure that your application is configured.`);
-  }
-
-  if (typeof application.config.gqlImporter !== 'function') {
-    throw new Exceptions.ConfigurationException('Configuration error. Please ensure that "gqlImporter" is set.');
-  }
-  return application.config;
 }
 
 /**
@@ -100,29 +71,6 @@ function humanBytes(bytes) {
   return `${(bytes / (1024 ** e)).toFixed(2)} ${' KMGTP'.charAt(e)}B`.replace('  ', ' ');
 }
 
-/* Loaders */
-
-/**
- * Lazy loads ${path} graphql document
- *
- * @param path {string} A path to the component
- * @returns {function(): (Promise<*>|*)}
- */
-function getGQL(path) {
-  return getConfig().gqlImporter(path);
-}
-
-/**
- * Lazy loads vue document by ${path}
- *
- * @param path {string} A path to the component
- * @param jsView {boolean} Is view a JS file
- * @returns {function(): (Promise<*>|*)}
- */
-function getView(path, jsView = false) {
-  return getConfig().viewImporter(path, jsView);
-}
-
 /* HTTP */
 
 /**
@@ -143,14 +91,15 @@ function httpPost(url, data) {
 /**
  * Lazy loads a graphql document
  *
+ * @param loader {function}
  * @param path {string} A path to the document
  * @returns {Promise<{doc: *} | never>}
  */
-function getGQLDocument(path) {
+function getGQLDocument(loader, path) {
   const segments = path.split('/');
   const docName = segments[segments.length - 1];
 
-  return getGQL(path)
+  return loader(path)
     .catch(() => ({ [docName]: {} }))
     .then(({ [docName]: doc }) => doc);
 }
@@ -447,11 +396,7 @@ function sleep(seconds = 1) {
 
 export {
   version,
-  getApplication,
-  getConfig,
   isMobile,
-  getView,
-  getGQL,
   getGQLDocument,
   ucwords,
   lowerCaseFirst,

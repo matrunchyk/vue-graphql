@@ -1,5 +1,5 @@
 import eventBus from '../../../lib/eventBus';
-import { getApplication } from '../../../lib/utils';
+import ConfigurationException from '../../Exceptions/ConfigurationException';
 
 class MenuItem {
   id = '';
@@ -26,10 +26,21 @@ class MenuItem {
   // Methods
   getBoundProps() {
     let { route } = this;
-    const { config: { vuex }} = getApplication();
+
+    if (typeof this.vue !== 'object') {
+      throw new ConfigurationException(`Vue instance must be VueComponent.
+      Make sure that BaseModel.vue contains your local vue instance.`);
+    }
+
+    if (typeof this.vue.$store !== 'object') {
+      throw new ConfigurationException(`It seems like vuex is not installed.
+      Make sure that you have installed vuex and configured.`);
+    }
+
+    const { vue: { $store }} = this;
 
     if (route && route.path) {
-      route = Object.assign(route, { params: { key: vuex.getters['route/key'] } });
+      route = Object.assign(route, { params: { key: $store.getters['route/key'] } });
     }
     const { href } = this;
 

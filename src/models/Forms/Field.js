@@ -1,7 +1,6 @@
 import Collection from '../Collection';
 import {
   spawn,
-  getConfig,
 } from '../../lib/utils';
 
 export default class Field {
@@ -57,6 +56,18 @@ export default class Field {
     this.setOptions();
   }
 
+  dataLoader(path) {
+    return Promise.reject(`Unable to load "${path}": dataLoader is not configured.
+      Please make sure that 'Field.dataLoader(path)' method is overriden in your local Field
+      and returns lazy-loaded GQL document. See library example for reference.`);
+  }
+
+  modelLoader(path) {
+    return Promise.reject(`Unable to load "${path}": modelLoader is not configured.
+      Please make sure that 'Field.modelLoader(path)' method is overriden in your local Field
+      and returns lazy-loaded GQL document. See library example for reference.`);
+  }
+
   setOptions() {
     if (this.sourceType === 'json') {
       this.getOptionsFromFile()
@@ -80,7 +91,7 @@ export default class Field {
   async getOptionsFromFile() {
     this.setLoading();
     try {
-      const items = await getConfig().dataImporter(this.source);
+      const items = await this.dataLoader(this.source);
 
       this.setLoading(false);
       return items;
@@ -94,7 +105,7 @@ export default class Field {
   async getCollection() {
     this.setLoading();
     try {
-      const { default: model } = await getConfig().modelImporter(this.source);
+      const { default: model } = await this.modelLoader(this.source);
       const { collection } = await model.get();
 
       this.setLoading(false);

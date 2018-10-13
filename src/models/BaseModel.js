@@ -8,10 +8,11 @@ import {
   getGQLDocument,
   defineProperties,
   cloneDeep,
-  getApplication,
+  version,
 } from '../lib/utils';
 import Collection from './Collection';
 import Form from './Forms/Form';
+import ConfigurationException from './Exceptions/ConfigurationException';
 
 /**
  * Class BaseModel
@@ -35,7 +36,7 @@ class BaseModel {
   documentsLoaded = false;
   pForm = null;
   formOptions = null;
-  application = null;
+  vue = {};
 
   /**
    * Class constructor
@@ -50,10 +51,17 @@ class BaseModel {
     // Object.defineProperties(this, Object.getOwnPropertyDescriptors(params));
     Object.assign(this, this.defaults, params);
     this.init();
-    this.application = getApplication();
   }
 
   // Static getters
+  /**
+   * Returns library version
+   *
+   * @returns {string}
+   */
+  static get version() {
+    return version();
+  }
   /**
    * Returns static class name
    *
@@ -116,7 +124,17 @@ class BaseModel {
    * @returns {{name: string, params: {key: string}}}
    */
   get routerPath() {
-    const from = this.application.config.vue.$route.fullPath;
+    if (typeof this.vue !== 'object') {
+      throw new ConfigurationException(`Vue instance must be VueComponent.
+      Make sure that BaseModel.vue contains your local vue instance.`);
+    }
+
+    if (typeof this.vue.$route !== 'object') {
+      throw new ConfigurationException(`It seems like vue-router is not installed.
+      Make sure that you have installed vue-router and configured.`);
+    }
+
+    const from = this.vue.$route.fullPath;
 
     return {
       name: to.snake(this.className),
@@ -190,6 +208,12 @@ class BaseModel {
   }
 
   // Instance methods
+  gqlLoader(path) {
+    return Promise.reject(`Unable to load "${path}": gqlLoader is not configured.
+    Please make sure that 'BaseModel.gqlLoader(path)' method is overriden in your local BaseModel
+    and returns lazy-loaded GQL document. See library example for reference.`);
+  }
+
   /**
    * Updates a model item and returns updated
    *
@@ -225,6 +249,15 @@ class BaseModel {
    * @returns {Promise<BaseModel>}
    */
   async save(mutation, variables = {}) {
+    if (typeof this.vue !== 'object') {
+      throw new ConfigurationException(`Vue instance must be VueComponent.
+      Make sure that BaseModel.vue contains your local vue instance.`);
+    }
+
+    if (typeof this.vue.$apollo !== 'object') {
+      throw new ConfigurationException(`It seems like vue-apollo is not installed.
+      Make sure that you have installed vue-apollo and configured.`);
+    }
     const opName = getGQLDocumentName(mutation, this.className);
 
     // Sets a loading flag on
@@ -237,7 +270,7 @@ class BaseModel {
       /**
        * Perform a mutation
        */
-      const result = await this.application.config.apollo.mutate({
+      const result = await this.vue.$apollo.mutate({
         mutation,
         variables,
         // optimisticResponse: {
@@ -267,7 +300,7 @@ class BaseModel {
     this.setLoading();
     try {
       // noinspection JSUnresolvedFunction
-      const { data: { [opName]: result } } = await this.application.config.apollo.query({
+      const { data: { [opName]: result } } = await this.vue.$apollo.query({
         errorPolicy: 'all',
         query,
         variables,
@@ -346,19 +379,31 @@ class BaseModel {
 
       try {
         if (!this.query.definitions) {
-          this.query = await getGQLDocument(`${entitiesFolder}/queries/fetch${this.className}`);
+          this.query = await getGQLDocument(
+            this.gqlLoader,
+            `${entitiesFolder}/queries/fetch${this.className}`
+          );
         }
 
         if (!this.queryMany.definitions) {
-          this.queryMany = await getGQLDocument(`${entitiesFolder}/queries/fetch${entityNamePlural}`);
+          this.queryMany = await getGQLDocument(
+            this.gqlLoader,
+            `${entitiesFolder}/queries/fetch${entityNamePlural}`
+          );
         }
 
         if (!this.mutationUpdate.definitions) {
-          this.mutationUpdate = await getGQLDocument(`${entitiesFolder}/mutations/update${this.className}`);
+          this.mutationUpdate = await getGQLDocument(
+            this.gqlLoader,
+            `${entitiesFolder}/mutations/update${this.className}`
+          );
         }
 
         if (!this.mutationCreate.definitions) {
-          this.mutationCreate = await getGQLDocument(`${entitiesFolder}/mutations/create${this.className}`);
+          this.mutationCreate = await getGQLDocument(
+            this.gqlLoader,
+            `${entitiesFolder}/mutations/create${this.className}`
+          );
         }
 
         resolve();

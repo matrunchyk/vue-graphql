@@ -5,8 +5,6 @@ import VueGraphqlModels from './lib/VueGraphqlModels';
 import BaseModel from './models/BaseModel.js';
 import Exceptions from './models/Exceptions';
 import Collection from './models/Collection';
-import Application from './models/Application';
-import Config from './models/Config';
 
 // Menu
 import MenuRepository from './models/Menu/repository/MenuRepository';
@@ -28,8 +26,6 @@ export {
   BaseModel,
   Exceptions,
   Collection,
-  Application,
-  Config,
 
   MenuRepository,
   MenuItem,
