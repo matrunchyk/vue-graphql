@@ -14,6 +14,8 @@ import Collection from './Collection';
 import Form from './Forms/Form';
 import ConfigurationException from './Exceptions/ConfigurationException';
 
+const gqlCache = {};
+
 /**
  * Class BaseModel
  */
@@ -380,28 +382,36 @@ class BaseModel {
 
       try {
         if (!this.query.definitions) {
-          this.query = await getGQLDocument(
+          const gqlCached = gqlCache[`${entitiesFolder}/queries/fetch${this.className}`];
+
+          this.query = gqlCached ? gqlCached : await getGQLDocument(
             this.gqlLoader,
             `${entitiesFolder}/queries/fetch${this.className}`
           );
         }
 
         if (!this.queryMany.definitions) {
-          this.queryMany = await getGQLDocument(
+          const gqlCached = gqlCache[`${entitiesFolder}/queries/fetch${entityNamePlural}`];
+
+          this.queryMany = gqlCached ? gqlCached : await getGQLDocument(
             this.gqlLoader,
             `${entitiesFolder}/queries/fetch${entityNamePlural}`
           );
         }
 
         if (!this.mutationUpdate.definitions) {
-          this.mutationUpdate = await getGQLDocument(
+          const gqlCached = gqlCache[`${entitiesFolder}/queries/fetch${entityNamePlural}`];
+
+          this.mutationUpdate = gqlCached ? gqlCached : await getGQLDocument(
             this.gqlLoader,
             `${entitiesFolder}/mutations/update${this.className}`
           );
         }
 
         if (!this.mutationCreate.definitions) {
-          this.mutationCreate = await getGQLDocument(
+          const gqlCached = gqlCache[`${entitiesFolder}/queries/fetch${entityNamePlural}`];
+
+          this.mutationCreate = gqlCached ? gqlCached : await getGQLDocument(
             this.gqlLoader,
             `${entitiesFolder}/mutations/create${this.className}`
           );
