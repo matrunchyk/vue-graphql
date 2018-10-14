@@ -423,10 +423,19 @@ export default {
 
 See [example](https://github.com/digitalideastudio/vue-graphql-models-example) how to use this package.
 
+[![Edit Vue Template](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/n01pz0z470)
+
+Note: It seems like CodeSandbox doesn't have Lazy Loading support. CodeSandbox still WIP, though you can visually see how the library _could_ be utilized.  
+
 ## Contribution
 
 Feel free to submit your pull-requests, ideas, proposals and bug reports!
  
 ### TODOs:
-- Add CodeSandbox examples
+- ~~Add CodeSandbox example~~
+- ~~Add Launchpad example for lazy folks~~
+- Add even more speed & optimization & caching
 - Rewrite to TypeScript
+- Add subscriptions & events example
+- Add menu event hooks example
+- Write more tests & coverage support

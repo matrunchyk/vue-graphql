@@ -1,7 +1,20 @@
 /* global describe, it, before */
 
 import chai from 'chai';
-import { BaseModel, Exceptions, Utils } from '../lib/vue-graphql-models.min';
+import Vue from 'vue';
+import VueGraphqlModels, { BaseModel, Exceptions, Utils } from '../lib/vue-graphql-models.min';
+
+Vue.use(VueGraphqlModels, {
+  dataLoader(path) {
+    return import(/* webpackChunkName: "data/[request]" */ `Data/${path}`);
+  },
+  modelLoader(path) {
+    return import(/* webpackChunkName: "models/[request]" */ `Models/${path}`);
+  },
+  gqlLoader(path) {
+    return import(/* webpackChunkName: "gql/[request]" */ `Gql/${path}.graphql`);
+  },
+});
 
 chai.expect();
 

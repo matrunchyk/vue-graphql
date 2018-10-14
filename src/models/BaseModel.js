@@ -13,6 +13,7 @@ import {
 import Collection from './Collection';
 import Form from './Forms/Form';
 import ConfigurationException from './Exceptions/ConfigurationException';
+import Vue from 'vue';
 
 const gqlCache = {};
 
@@ -39,6 +40,7 @@ class BaseModel {
   pForm = null;
   formOptions = null;
   vue = {};
+  isEmpty = false;
 
   /**
    * Class constructor
@@ -48,12 +50,19 @@ class BaseModel {
   constructor(params = {}) {
     this.setDefaultTypename();
     // noinspection JSIgnoredPromiseFromCall
-    this.loadDocuments();
-    // Object.defineProperties(this, Object.getOwnPropertyDescriptors(this.defaults));
-    // Object.defineProperties(this, Object.getOwnPropertyDescriptors(params));
+    if (!params.empty) {
+      this.isEmpty = true;
+      this.loadDocuments();
+    }
+
     Object.assign(this, this.defaults, params);
-    this.init();
     this.vue = Object.getPrototypeOf(this).vue;
+
+    // TODO: Probably needs to be async to free up the event loop
+    // TODO: so the instance could be built w/o delays
+    if (!params.empty) {
+      this.init();
+    }
   }
 
   // Static getters
@@ -207,14 +216,17 @@ class BaseModel {
    */
   static empty() {
     // noinspection JSValidateTypes
-    return spawn(this);
+    return spawn(this, [{ empty: true }]);
   }
 
   // Instance methods
   gqlLoader(path) {
-    return Promise.reject(`Unable to load "${path}": gqlLoader is not configured.
-    Please make sure that 'BaseModel.gqlLoader(path)' method is overriden in your local BaseModel
-    and returns lazy-loaded GQL document. See library example for reference.`);
+    if (typeof Vue.prototype.$vgmOptions.gqlLoader !== 'function') {
+      return Promise.reject(`Unable to load "${path}": gqlLoader is not configured.
+        Please make sure that 'BaseModel.gqlLoader(path)' method is overriden in your local BaseModel
+        and returns lazy-loaded GQL document. See library example for reference.`);
+    }
+    return Vue.prototype.$vgmOptions.gqlLoader(path);
   }
 
   /**
@@ -377,51 +389,42 @@ class BaseModel {
     }
     return new Promise(async (resolve, reject) => {
       const entityNamePlural = pluralize(this.className);
-      // noinspection JSUnresolvedFunction
-      const entitiesFolder = to.camel(entityNamePlural);
+      const gqlSrc = to.camel(entityNamePlural);
 
       try {
-        if (!this.query.definitions) {
-          const gqlCached = gqlCache[`${entitiesFolder}/queries/fetch${this.className}`];
+        await Promise.all([
+          this.getCachedGql('query', `${gqlSrc}/queries/fetch${this.className}`),
+          this.getCachedGql('queryMany', `${gqlSrc}/queries/fetch${entityNamePlural}`),
+          this.getCachedGql('mutationCreate', `${gqlSrc}/mutations/create${this.className}`),
+          this.getCachedGql('mutationUpdate', `${gqlSrc}/mutations/update${this.className}`),
+        ]);
 
-          this.query = gqlCached ? gqlCached : await getGQLDocument(
-            this.gqlLoader,
-            `${entitiesFolder}/queries/fetch${this.className}`
-          );
-        }
-
-        if (!this.queryMany.definitions) {
-          const gqlCached = gqlCache[`${entitiesFolder}/queries/fetch${entityNamePlural}`];
-
-          this.queryMany = gqlCached ? gqlCached : await getGQLDocument(
-            this.gqlLoader,
-            `${entitiesFolder}/queries/fetch${entityNamePlural}`
-          );
-        }
-
-        if (!this.mutationUpdate.definitions) {
-          const gqlCached = gqlCache[`${entitiesFolder}/queries/fetch${entityNamePlural}`];
-
-          this.mutationUpdate = gqlCached ? gqlCached : await getGQLDocument(
-            this.gqlLoader,
-            `${entitiesFolder}/mutations/update${this.className}`
-          );
-        }
-
-        if (!this.mutationCreate.definitions) {
-          const gqlCached = gqlCache[`${entitiesFolder}/queries/fetch${entityNamePlural}`];
-
-          this.mutationCreate = gqlCached ? gqlCached : await getGQLDocument(
-            this.gqlLoader,
-            `${entitiesFolder}/mutations/create${this.className}`
-          );
-        }
-
+        this.documentsLoaded = true;
         resolve();
       } catch (e) {
         reject(e);
       }
     });
+  }
+
+  /**
+   * Retrieves cached GQL document from a local cache and adds it of it doesn't there yet.
+   *
+   * @param propName {string}
+   * @param path {string}
+   * @returns {Promise<void>}
+   */
+  async getCachedGql(propName, path) {
+    if (!this[propName] || !this[propName].definitions) {
+      if (!gqlCache[path]) {
+        gqlCache[path] = await getGQLDocument(
+          this.gqlLoader,
+          path
+        );
+      }
+
+      this[propName] = gqlCache[path];
+    }
   }
 
   /**

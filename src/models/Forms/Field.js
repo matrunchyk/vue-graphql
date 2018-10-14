@@ -1,4 +1,5 @@
 import Collection from '../Collection';
+import Vue from 'vue';
 import {
   spawn,
 } from '../../lib/utils';
@@ -36,7 +37,8 @@ export default class Field {
     source = '',
     sourceType = '',
     type,
-    validations = {}
+    validations = {},
+    empty = false,
   }) {
     this.chips = chips;
     this.defValue = defValue;
@@ -53,19 +55,27 @@ export default class Field {
     this.type = type;
     this.validations = validations;
 
-    this.setOptions();
+    if (!empty) {
+      this.setOptions();
+    }
   }
 
   dataLoader(path) {
-    return Promise.reject(`Unable to load "${path}": dataLoader is not configured.
-      Please make sure that 'Field.dataLoader(path)' method is overriden in your local Field
-      and returns lazy-loaded GQL document. See library example for reference.`);
+    if (typeof Vue.prototype.$vgmOptions.dataLoader !== 'function') {
+      return Promise.reject(`Unable to load "${path}": dataLoader is not configured.
+        Please make sure that 'Field.dataLoader(path)' method is overriden in your local Field
+        and returns lazy-loaded GQL document. See library example for reference.`);
+    }
+    return Vue.prototype.$vgmOptions.dataLoader(path);
   }
 
   modelLoader(path) {
-    return Promise.reject(`Unable to load "${path}": modelLoader is not configured.
-      Please make sure that 'Field.modelLoader(path)' method is overriden in your local Field
-      and returns lazy-loaded GQL document. See library example for reference.`);
+    if (typeof Vue.prototype.$vgmOptions.modelLoader !== 'function') {
+      return Promise.reject(`Unable to load "${path}": modelLoader is not configured.
+        Please make sure that 'Field.modelLoader(path)' method is overriden in your local Field
+        and returns lazy-loaded GQL document. See library example for reference.`);
+    }
+    return Vue.prototype.$vgmOptions.modelLoader(path);
   }
 
   setOptions() {
@@ -135,7 +145,7 @@ export default class Field {
    */
   static empty() {
     // noinspection JSValidateTypes
-    return spawn(this);
+    return spawn(this, [{ empty: true }]);
   }
 
   setLoading(loading = true) {
