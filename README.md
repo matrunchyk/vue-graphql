@@ -452,7 +452,18 @@ A. For better DX (developer experience), the library relies on a name of your mo
          },
        })],
      },
-     ```   
+     ``` 
+    
+Alternative solution: Put inside your each model two overrides with your manually defined class names. For example:
+```
+get className {
+  return 'Fruit';
+}
+
+get className() {
+  return this.constructor.name;
+}
+```
 
 ## Contribution
 
@@ -466,4 +477,3 @@ Feel free to submit your pull-requests, ideas, proposals and bug reports!
 - Add subscriptions & events example
 - Add menu event hooks example
 - Write more tests & coverage support
-- Add an alternative option which allows to use `UglifyJSPlugin` with `keep_fnames: false`.
