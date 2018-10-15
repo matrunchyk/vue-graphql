@@ -427,6 +427,33 @@ See [example](https://github.com/digitalideastudio/vue-graphql-models-example) h
 
 Note: It seems like CodeSandbox doesn't have Lazy Loading support. CodeSandbox still WIP, though you can visually see how the library _could_ be utilized.  
 
+## Troubleshooting
+Q. My `.graphql` files are not loaded.
+
+A. For better DX (developer experience), the library relies on a name of your model class. It seems like you're using `uglifyjs-webpack-plugin` which minimizes (uglifies) a class name so name `Fruit` becomes `n`. To turn it of, you can perform the following steps:
+  1. `npm i -D uglifyjs-webpack-plugin`
+  2. Open your webpack configuration file (for Vue CLI 3 projects it's `vue.config.js`, for Laravel Mix it's `webpack.mix.js`) and import the plugin:
+    
+      ```
+      const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+      ```
+  3. Add the following block to the webpack configuration:
+     ```
+     optimization: {
+       minimize: false,
+       minimizer: [new UglifyJSPlugin({
+         uglifyOptions: {
+           mangle: {
+             keep_fnames: true,
+           },
+           compress: {
+             keep_fnames: true,
+           },
+         },
+       })],
+     },
+     ```   
+
 ## Contribution
 
 Feel free to submit your pull-requests, ideas, proposals and bug reports!
@@ -439,3 +466,4 @@ Feel free to submit your pull-requests, ideas, proposals and bug reports!
 - Add subscriptions & events example
 - Add menu event hooks example
 - Write more tests & coverage support
+- Add an alternative option which allows to use `UglifyJSPlugin` with `keep_fnames: false`.
