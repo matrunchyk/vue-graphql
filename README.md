@@ -456,12 +456,12 @@ A. For better DX (developer experience), the library relies on a name of your mo
     
 Alternative solution: Put inside your each model two overrides with your manually defined class names. For example:
 ```
-get className {
+static get className {
   return 'Fruit';
 }
 
 get className() {
-  return this.constructor.name;
+  return 'Fruit';
 }
 ```
 
