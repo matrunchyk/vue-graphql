@@ -40,7 +40,7 @@ class BaseModel {
   pForm = null;
   formOptions = null;
   vue = {};
-  isEmpty = false;
+  isEmpty = true;
 
   /**
    * Class constructor
@@ -51,7 +51,7 @@ class BaseModel {
     this.setDefaultTypename();
     // noinspection JSIgnoredPromiseFromCall
     if (!params.empty) {
-      this.isEmpty = true;
+      this.isEmpty = false;
       this.loadDocuments();
     }
 
