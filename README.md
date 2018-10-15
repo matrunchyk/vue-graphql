@@ -430,7 +430,7 @@ Note: It seems like CodeSandbox doesn't have Lazy Loading support. CodeSandbox s
 ## Troubleshooting
 Q. My `.graphql` files are not loaded. It says `Did you forget to add query or mutation to n?`
 
-A. For better DX (developer experience), the library relies on a name of your model class. It seems like you're using `uglifyjs-webpack-plugin` which minimizes (uglifies) a class name so name `Fruit` becomes `n`. To turn it of, you can perform the following steps:
+A. For better DX (developer experience), the library relies on a name of your model class. It seems like you're using `uglifyjs-webpack-plugin` which minimizes (uglifies) a class name so name `Fruit` becomes `n`. To turn it off, you can perform the following steps:
   1. `npm i -D uglifyjs-webpack-plugin`
   2. Open your webpack configuration file (for Vue CLI 3 projects it's `vue.config.js`, for Laravel Mix it's `webpack.mix.js`) and import the plugin:
     
