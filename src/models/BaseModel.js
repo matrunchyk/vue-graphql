@@ -413,7 +413,7 @@ class BaseModel {
    * @returns {Promise<void>}
    */
   async getCachedGql(propName, path) {
-    if (this[propName] !== false) {
+    if (this[propName] === false) {
       return;
     }
     if ((!this[propName] || !this[propName].definitions)) {
