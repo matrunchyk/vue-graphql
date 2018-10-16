@@ -49,7 +49,7 @@ class BaseModel {
    */
   constructor(params = {}) {
     this.setDefaultTypename();
-    // noinspection JSIgnoredPromiseFromCall
+    // noinspection JSIgnoreBaseBadPromiseFromCall
     if (!params.empty) {
       this.isEmpty = false;
       this.loadDocuments();
@@ -151,7 +151,7 @@ class BaseModel {
     return {
       name: to.snake(this.className),
       params: {
-        key: this._key,
+        key: this[this.primaryKey],
       },
       query: {
         from,
@@ -392,12 +392,10 @@ class BaseModel {
       const gqlSrc = to.camel(entityNamePlural);
 
       try {
-        await Promise.all([
-          this.getCachedGql('query', `${gqlSrc}/queries/fetch${this.className}`),
-          this.getCachedGql('queryMany', `${gqlSrc}/queries/fetch${entityNamePlural}`),
-          this.getCachedGql('mutationCreate', `${gqlSrc}/mutations/create${this.className}`),
-          this.getCachedGql('mutationUpdate', `${gqlSrc}/mutations/update${this.className}`),
-        ]);
+        await this.getCachedGql('query', `${gqlSrc}/queries/fetch${this.className}`);
+        await this.getCachedGql('queryMany', `${gqlSrc}/queries/fetch${entityNamePlural}`);
+        await this.getCachedGql('mutationCreate', `${gqlSrc}/mutations/create${this.className}`);
+        await this.getCachedGql('mutationUpdate', `${gqlSrc}/mutations/update${this.className}`);
 
         this.documentsLoaded = true;
         resolve();

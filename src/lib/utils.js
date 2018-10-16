@@ -100,7 +100,12 @@ function getGQLDocument(loader, path) {
   const docName = segments[segments.length - 1];
 
   return loader(path)
-    .catch(() => ({ [docName]: {} }))
+    .catch(() => {
+      console.warn(`Problem loading GQL: ${path}`);
+      return {
+        [docName]: {},
+      };
+    })
     .then(({ [docName]: doc }) => doc);
 }
 
