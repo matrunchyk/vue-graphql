@@ -101,7 +101,7 @@ function getGQLDocument(loader, path) {
 
   return loader(path)
     .catch(() => {
-      console.warn(`Problem loading GQL: ${path}`);
+      console.info(`Skipping missing GQL: ${path}`);
       return {
         [docName]: {},
       };
