@@ -413,7 +413,10 @@ class BaseModel {
    * @returns {Promise<void>}
    */
   async getCachedGql(propName, path) {
-    if (!this[propName] || !this[propName].definitions) {
+    if (this[propName] !== false) {
+      return;
+    }
+    if ((!this[propName] || !this[propName].definitions)) {
       if (!gqlCache[path]) {
         gqlCache[path] = await getGQLDocument(
           this.gqlLoader,
