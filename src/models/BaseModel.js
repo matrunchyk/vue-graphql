@@ -179,7 +179,7 @@ class BaseModel {
    * @returns {Promise<{BaseModel}>}
    */
   static async find(variables = {}) {
-    const instance = spawn(this);
+    const instance = this.empty();
 
     await instance.loadDocuments();
     return instance.fetch(instance.query, variables);
@@ -192,7 +192,7 @@ class BaseModel {
    * @returns {Promise<{BaseModel[]}>}
    */
   static async get(variables = {}) {
-    const instance = spawn(this);
+    const instance = this.empty();
 
     await instance.loadDocuments();
     return instance.fetch(instance.queryMany, variables);
