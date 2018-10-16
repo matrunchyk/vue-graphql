@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import moment from 'moment';
 import to from 'to-case';
 import * as pluralize from 'pluralize';
@@ -13,7 +14,8 @@ import {
 import Collection from './Collection';
 import Form from './Forms/Form';
 import ConfigurationException from './Exceptions/ConfigurationException';
-import Vue from 'vue';
+import BaseException from './Exceptions/BaseException';
+import ServerErrorException from './Exceptions/ServerResponseException';
 
 const gqlCache = {};
 
@@ -322,6 +324,14 @@ class BaseModel {
         subscribeToMore,
       });
 
+      if (!wantsMany && Array.isArray(result)) {
+        throw new ServerErrorException('Was expected an object but received an array.');
+      }
+
+      if (wantsMany && !Array.isArray(result)) {
+        throw new ServerErrorException('Was expected an array but received an object.');
+      }
+
       if (wantsMany || Array.isArray(result)) {
         const resCol = new Collection(result);
         const filtered = resCol.filter(s => s);
@@ -332,6 +342,9 @@ class BaseModel {
 
       return this.hydrate(cloneDeep(result));
     } catch (e) {
+      if (e instanceof BaseException) {
+        throw e;
+      }
       console.error(e.message);
       return wantsMany ?
         new Collection([]) :
