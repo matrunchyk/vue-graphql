@@ -24,7 +24,7 @@ const gqlCache = {};
  * Class BaseModel
  */
 class BaseModel {
-  __typename = 'Base';
+  __typename = 'BaseModel';
   _key = '';
   mutationCreate = {};
   mutationUpdate = {};
@@ -44,7 +44,6 @@ class BaseModel {
   pForm = null;
   formOptions = null;
   vue = {};
-  isEmpty = true;
   casts = {};
   initialState = {};
   isDirty = false;
@@ -60,26 +59,11 @@ class BaseModel {
       this.$vgmOptions = Vue.prototype.$vgmOptions;
     }
 
-    if (!params.empty) {
-      this.isEmpty = false;
+    if (!params.boot) {
+      return this;
     }
 
-    this.uncountables.forEach(rule => pluralize.addUncountableRule(rule));
-    this.setDefaultTypename();
-    // noinspection JSIgnoreBaseBadPromiseFromCall
-    this.loadDocuments();
-
-    Object.assign(this, this.defaults);
-    const processedParams = this.processCasts(params);
-
-    Object.assign(this, processedParams);
-    // TODO: Probably needs to be async to free up the event loop
-    // TODO: so the instance could be built w/o delays
-    if (!params.empty) {
-      this.init();
-    }
-    Object.assign(this.initialState, processedParams);
-    this.vue = Object.getPrototypeOf(this).vue;
+    this.configure(params);
   }
 
   // Static getters
@@ -196,7 +180,7 @@ class BaseModel {
    * @returns {Promise<{BaseModel}>}
    */
   static async find(variables = {}) {
-    const instance = this.empty();
+    const instance = this.empty(false);
 
     if (isDebug()) {
       console.info('".find" method executed');
@@ -212,7 +196,7 @@ class BaseModel {
    * @returns {Promise<{BaseModel[]}>}
    */
   static async get(variables = {}) {
-    const instance = this.empty();
+    const instance = this.empty(false);
 
     if (isDebug()) {
       console.info('".get" method executed');
@@ -240,12 +224,34 @@ class BaseModel {
    *
    * @returns {BaseModel}
    */
-  static empty() {
+  static empty(boot = true) {
+    if (isDebug()) {
+      console.info('Spawning an empty model...');
+    }
     // noinspection JSValidateTypes
-    return spawn(this, [{ empty: true }]);
+    return spawn(this, [{ boot }]);
   }
 
   // Instance methods
+  /**
+   * Configures a model
+   *
+   * @param params
+   */
+  configure(params = {}) {
+    this.uncountables.forEach(rule => pluralize.addUncountableRule(rule));
+    this.setDefaultTypename();
+
+    Object.assign(this, this.defaults);
+    const processedParams = this.processCasts(params);
+
+    Object.assign(this, processedParams);
+    // TODO: Probably needs to be async to free up the event loop
+    // TODO: so the instance could be built w/o delays
+    this.init();
+    Object.assign(this.initialState, processedParams);
+    this.vue = Object.getPrototypeOf(this).vue;
+  }
   /**
    * Processes casts
    */
@@ -290,13 +296,14 @@ class BaseModel {
    *
    * @returns {Promise<*>}
    */
-  update() {
+  async update() {
     const prepared = this.prepareFieldsVariables();
 
     if (isDebug()) {
       console.info('".update" method executed');
     }
 
+    await this.loadDocuments();
     return this.save(this.mutationUpdate, {
       [this.primaryKey]: this[this.primaryKey],
       [this.inputDataKey]: prepared,
@@ -308,12 +315,13 @@ class BaseModel {
    *
    * @returns {Promise<*>}
    */
-  create() {
+  async create() {
     const prepared = this.prepareFieldsVariables();
 
     if (isDebug()) {
       console.info('".create" method executed');
     }
+    await this.loadDocuments();
     return this.save(this.mutationCreate, {
       [this.inputDataKey]: prepared,
     });
@@ -324,10 +332,12 @@ class BaseModel {
    *
    * @returns {Promise<*>}
    */
-  delete() {
+  async delete() {
     if (isDebug()) {
       console.info('".delete" method executed');
     }
+
+    await this.loadDocuments();
     return this.save(this.mutationDelete, {
       [this.primaryKey]: this[this.primaryKey],
     });
