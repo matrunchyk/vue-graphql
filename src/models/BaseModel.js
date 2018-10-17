@@ -63,7 +63,7 @@ class BaseModel {
       return this;
     }
 
-    this.configure(params);
+    this.boot(params);
   }
 
   // Static getters
@@ -234,11 +234,11 @@ class BaseModel {
 
   // Instance methods
   /**
-   * Configures a model
+   * Boots a model
    *
    * @param params
    */
-  configure(params = {}) {
+  boot(params = {}) {
     this.uncountables.forEach(rule => pluralize.addUncountableRule(rule));
     this.setDefaultTypename();
 
