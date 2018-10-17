@@ -538,21 +538,21 @@ class BaseModel {
    */
   async getCachedGql(propName, path) {
     if (isDebug()) {
-      console.info(`Inititated retrieval of ${propName} from a cache...`);
+      console.info(`Inititated retrieval of ${path} from a cache...`);
     }
     if (this[propName] === false) {
       if (isDebug()) {
-        console.info(`${propName} is set to 'false', skipping.`);
+        console.info(`"${propName}" is set to 'false', skipping.`);
       }
       return;
     }
     if ((!this[propName] || !this[propName].definitions)) {
       if (isDebug()) {
-        console.info(`${propName} was not set, proceeding to an autoloading...`);
+        console.info(`"${propName}" was not set, proceeding to an autoloading...`);
       }
       if (!gqlCache[path]) {
         if (isDebug()) {
-          console.info(`No cache found for ${propName}, proceeding to a loader...`);
+          console.info(`No cache found for ${path}, proceeding to a loader...`);
         }
         gqlCache[path] = await getGQLDocument(
           this.gqlLoader,
@@ -561,7 +561,7 @@ class BaseModel {
       }
 
       if (isDebug()) {
-        console.info(`Caching ${propName} for ${path}`);
+        console.info(`Caching "${propName}" for ${path}`);
       }
       this[propName] = gqlCache[path];
     }
