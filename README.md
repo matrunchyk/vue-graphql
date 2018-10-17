@@ -472,6 +472,7 @@ Feel free to submit your pull-requests, ideas, proposals and bug reports!
 ### TODOs:
 - ~~Add CodeSandbox example~~
 - ~~Add Launchpad example for lazy folks~~
+- Create github.io pages with a whole documentation & examples
 - Add relationship support between models (e.g attach/detach/sync/etc)
 - Add even more speed & optimization & caching
 - Rewrite to TypeScript
