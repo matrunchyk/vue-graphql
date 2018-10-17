@@ -480,3 +480,4 @@ Feel free to submit your pull-requests, ideas, proposals and bug reports!
 - Write more tests & coverage support
 - Add versioning support
 - Add validation of dynamic fields
+- Create MenuDrawer component

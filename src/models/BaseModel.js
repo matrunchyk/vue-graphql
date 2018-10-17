@@ -9,7 +9,7 @@ import {
   getGQLDocument,
   defineProperties,
   cloneDeep,
-  version,
+  version, isDebug
 } from '../lib/utils';
 import Collection from './Collection';
 import Form from './Forms/Form';
@@ -55,6 +55,10 @@ class BaseModel {
    * @param {Object} params
    */
   constructor(params = {}) {
+    if (Vue.prototype.$vgmOptions) {
+      this.$vgmOptions = Vue.prototype.$vgmOptions;
+    }
+
     if (!params.empty) {
       this.isEmpty = false;
     }
@@ -193,6 +197,9 @@ class BaseModel {
   static async find(variables = {}) {
     const instance = this.empty();
 
+    if (isDebug()) {
+      console.info('".find" method executed');
+    }
     await instance.loadDocuments();
     return instance.fetch(instance.query, variables);
   }
@@ -206,6 +213,9 @@ class BaseModel {
   static async get(variables = {}) {
     const instance = this.empty();
 
+    if (isDebug()) {
+      console.info('".get" method executed');
+    }
     await instance.loadDocuments();
     return instance.fetch(instance.queryMany, variables);
   }
@@ -217,6 +227,9 @@ class BaseModel {
    * @returns {Collection}
    */
   static emptyCollection() {
+    if (isDebug()) {
+      console.info('Spawning an empty collection...');
+    }
     return new Collection();
   }
 
@@ -236,6 +249,9 @@ class BaseModel {
    * Processes casts
    */
   processCasts(params) {
+    if (isDebug()) {
+      console.info('Processing casts...');
+    }
     const casted = Object.assign({}, params);
 
     Object.keys(casted).forEach((key) => {
@@ -276,6 +292,10 @@ class BaseModel {
   update() {
     const prepared = this.prepareFieldsVariables();
 
+    if (isDebug()) {
+      console.info('".update" method executed');
+    }
+
     return this.save(this.mutationUpdate, {
       [this.primaryKey]: this[this.primaryKey],
       [this.inputDataKey]: prepared,
@@ -290,6 +310,9 @@ class BaseModel {
   create() {
     const prepared = this.prepareFieldsVariables();
 
+    if (isDebug()) {
+      console.info('".create" method executed');
+    }
     return this.save(this.mutationCreate, {
       [this.inputDataKey]: prepared,
     });
@@ -301,6 +324,9 @@ class BaseModel {
    * @returns {Promise<*>}
    */
   delete() {
+    if (isDebug()) {
+      console.info('".delete" method executed');
+    }
     return this.save(this.mutationDelete, {
       [this.primaryKey]: this[this.primaryKey],
     });
@@ -314,6 +340,9 @@ class BaseModel {
    * @returns {Promise<BaseModel>}
    */
   async save(mutation, variables = {}) {
+    if (isDebug()) {
+      console.info('".save" method executed');
+    }
     if (typeof this.vue !== 'object') {
       throw new ConfigurationException(`Vue instance must be VueComponent.
       Make sure that BaseModel.vue contains your local vue instance.`);
@@ -335,6 +364,9 @@ class BaseModel {
       /**
        * Perform a mutation
        */
+      if (isDebug()) {
+        console.info('Save: Performing Apollo mutation...');
+      }
       const result = await this.vue.$apollo.mutate({
         mutation,
         variables,
@@ -346,9 +378,16 @@ class BaseModel {
         update: (store, { data }) => this.updated(store, data[opName]),
       });
 
+      if (isDebug()) {
+        console.info('Save: Apollo mutation status: OK');
+      }
+
       // Update properties returned from a server
       defineProperties(this, result.data[opName]);
     } catch (e) {
+      if (isDebug()) {
+        console.info('Save: Apollo mutation status: FAIL');
+      }
       console.warn(e.message);
     } finally {
       // Sets a loading flag off
@@ -362,6 +401,9 @@ class BaseModel {
     const opName = getGQLDocumentName(query, this.className);
     const wantsMany = variables._key === undefined;
 
+    if (isDebug()) {
+      console.info('".fetch" method executed');
+    }
     this.setLoading();
     try {
       // noinspection JSUnresolvedFunction
@@ -371,6 +413,10 @@ class BaseModel {
         variables,
         subscribeToMore,
       });
+
+      if (isDebug()) {
+        console.info('Fetch: Apollo mutation status: OK');
+      }
 
       if (!wantsMany && Array.isArray(result)) {
         throw new ServerErrorException('Was expected an object but received an array.');
@@ -385,11 +431,20 @@ class BaseModel {
         const filtered = resCol.filter(s => s);
         const sorted = filtered.sortBy(this.defaultSortBy);
 
+        if (isDebug()) {
+          console.info('Fetch: hydrating a collection');
+        }
         return sorted.map(i => this.hydrate(i));
       }
 
+      if (isDebug()) {
+        console.info('Fetch: hydrating a single model');
+      }
       return this.hydrate(cloneDeep(result));
     } catch (e) {
+      if (isDebug()) {
+        console.info('Fetch: Apollo mutation status: FAIL');
+      }
       if (e instanceof BaseException) {
         throw e;
       }
@@ -445,7 +500,13 @@ class BaseModel {
   init() {}
 
   async loadDocuments() {
+    if (isDebug()) {
+      console.info('Loading documents...');
+    }
     if (this.documentsLoaded) {
+      if (isDebug()) {
+        console.info('Documents already have loaded, exiting.');
+      }
       return Promise.resolve();
     }
     return new Promise(async (resolve, reject) => {
@@ -475,17 +536,32 @@ class BaseModel {
    * @returns {Promise<void>}
    */
   async getCachedGql(propName, path) {
+    if (isDebug()) {
+      console.info(`Inititated retrieval of ${propName} from a cache...`);
+    }
     if (this[propName] === false) {
+      if (isDebug()) {
+        console.info(`${propName} is set to 'false', skipping.`);
+      }
       return;
     }
     if ((!this[propName] || !this[propName].definitions)) {
+      if (isDebug()) {
+        console.info(`${propName} was not set, proceeding to an autoloading...`);
+      }
       if (!gqlCache[path]) {
+        if (isDebug()) {
+          console.info(`No cache found for ${propName}, proceeding to a loader...`);
+        }
         gqlCache[path] = await getGQLDocument(
           this.gqlLoader,
           path
         );
       }
 
+      if (isDebug()) {
+        console.info(`Caching ${propName} for ${path}`);
+      }
       this[propName] = gqlCache[path];
     }
   }
@@ -563,7 +639,17 @@ class BaseModel {
   }
 
   // Hooks
+  created(props) {
+    if (isDebug()) {
+      console.info('Created hook fired');
+    }
+    defineProperties(this, props);
+  }
+
   updated(store, props) {
+    if (isDebug()) {
+      console.info('Updated hook fired');
+    }
     defineProperties(this, props);
   }
 }

@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import Exceptions from '../models/Exceptions';
 import pkg from '../../package';
 
@@ -6,6 +7,15 @@ import pkg from '../../package';
  */
 
 /* Environment */
+
+/**
+ * Determines whether the debug mode is on
+ *
+ * @returns {Boolean}
+ */
+function isDebug() {
+  return Vue.prototype.$vgmOptions && Vue.prototype.$vgmOptions.debug;
+}
 
 /**
  * Returns library version
@@ -99,14 +109,24 @@ function getGQLDocument(loader, path) {
   const segments = path.split('/');
   const docName = segments[segments.length - 1];
 
+  if (isDebug()) {
+    console.info(`Passing loading process of ${path} to a loader....`);
+  }
   return loader(path)
     .catch(() => {
-      console.info(`Skipping missing GQL: ${path}`);
+      if (isDebug()) {
+        console.info(`No GQL found using path ${path}. Skipping.`);
+      }
       return {
         [docName]: {},
       };
     })
-    .then(({ [docName]: doc }) => doc);
+    .then(({ [docName]: doc }) => {
+      if (isDebug()) {
+        console.info(`${path} has been imported successfully.`);
+      }
+      return doc;
+    });
 }
 
 /**
@@ -117,6 +137,9 @@ function getGQLDocument(loader, path) {
  * @returns {F} An instance of the class
  */
 function spawn(constructor, args = []) {
+  if (isDebug()) {
+    console.info(`Spawning a new instance of ${constructor.name}`);
+  }
   function F() {
     return constructor.apply(this, args);
   }
@@ -400,6 +423,7 @@ function sleep(seconds = 1) {
 }
 
 export {
+  isDebug,
   version,
   isMobile,
   getGQLDocument,
