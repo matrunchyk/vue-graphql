@@ -50,12 +50,12 @@ class BaseModel {
    * @param {Object} params
    */
   constructor(params = {}) {
-    this.setDefaultTypename();
-    // noinspection JSIgnoreBaseBadPromiseFromCall
     if (!params.empty) {
       this.isEmpty = false;
-      this.loadDocuments();
     }
+    this.setDefaultTypename();
+    // noinspection JSIgnoreBaseBadPromiseFromCall
+    this.loadDocuments();
 
     Object.assign(this, this.defaults, params);
     this.vue = Object.getPrototypeOf(this).vue;
