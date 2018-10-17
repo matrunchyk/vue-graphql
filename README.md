@@ -472,9 +472,11 @@ Feel free to submit your pull-requests, ideas, proposals and bug reports!
 ### TODOs:
 - ~~Add CodeSandbox example~~
 - ~~Add Launchpad example for lazy folks~~
+- Add relationship support between models (e.g attach/detach/sync/etc)
 - Add even more speed & optimization & caching
 - Rewrite to TypeScript
 - Add subscriptions & events example
 - Add menu event hooks example
 - Write more tests & coverage support
 - Add versioning support
+- Add validation of dynamic fields
