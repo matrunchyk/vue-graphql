@@ -9,7 +9,8 @@ import {
   getGQLDocument,
   defineProperties,
   cloneDeep,
-  version, isDebug
+  version,
+  isDebug,
 } from '../lib/utils';
 import Collection from './Collection';
 import Form from './Forms/Form';
