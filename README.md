@@ -477,3 +477,4 @@ Feel free to submit your pull-requests, ideas, proposals and bug reports!
 - Add subscriptions & events example
 - Add menu event hooks example
 - Write more tests & coverage support
+- Add versioning support
