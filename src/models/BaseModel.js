@@ -58,6 +58,7 @@ class BaseModel {
     if (Vue.prototype.$vgmOptions) {
       this.$vgmOptions = Vue.prototype.$vgmOptions;
     }
+    this.vue = Object.getPrototypeOf(this).vue;
 
     if (!params.boot) {
       return this;
@@ -250,7 +251,6 @@ class BaseModel {
     // TODO: so the instance could be built w/o delays
     this.init();
     Object.assign(this.initialState, processedParams);
-    this.vue = Object.getPrototypeOf(this).vue;
   }
   /**
    * Processes casts
