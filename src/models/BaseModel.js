@@ -43,6 +43,10 @@ class BaseModel {
   formOptions = null;
   vue = {};
   isEmpty = true;
+  casts = {};
+  initialState = {};
+  isDirty = false;
+  uncountables = [];
 
   /**
    * Class constructor
@@ -53,18 +57,23 @@ class BaseModel {
     if (!params.empty) {
       this.isEmpty = false;
     }
+
+    this.uncountables.forEach(rule => pluralize.addUncountableRule(rule));
     this.setDefaultTypename();
     // noinspection JSIgnoreBaseBadPromiseFromCall
     this.loadDocuments();
 
-    Object.assign(this, this.defaults, params);
-    this.vue = Object.getPrototypeOf(this).vue;
+    Object.assign(this, this.defaults);
+    const processedParams = this.processCasts(params);
 
+    Object.assign(this, processedParams);
     // TODO: Probably needs to be async to free up the event loop
     // TODO: so the instance could be built w/o delays
     if (!params.empty) {
       this.init();
     }
+    Object.assign(this.initialState, processedParams);
+    this.vue = Object.getPrototypeOf(this).vue;
   }
 
   // Static getters
@@ -222,6 +231,33 @@ class BaseModel {
   }
 
   // Instance methods
+  /**
+   * Processes casts
+   */
+  processCasts(params) {
+    const casted = Object.assign({}, params);
+
+    Object.keys(casted).forEach((key) => {
+      if (!this.casts[key]) {
+        return;
+      }
+      casted[key] = (new this.casts[key](casted[key])).valueOf();
+    });
+
+    return casted;
+  }
+
+  /**
+   * Reverts models state to an initial one
+   * @returns {*}
+   */
+  revert() {
+    const state = Object.assign(this, this.defaults, this.initialState);
+
+    this.isDirty = false;
+    return state;
+  }
+
   gqlLoader(path) {
     if (typeof Vue.prototype.$vgmOptions.gqlLoader !== 'function') {
       return Promise.reject(`Unable to load "${path}": gqlLoader is not configured.
@@ -514,7 +550,9 @@ class BaseModel {
   }
 
   // Hooks
-  updated() {}
+  updated(store, props) {
+    defineProperties(this, props);
+  }
 }
 
 export default BaseModel;
