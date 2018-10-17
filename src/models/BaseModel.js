@@ -27,6 +27,7 @@ class BaseModel {
   _key = '';
   mutationCreate = {};
   mutationUpdate = {};
+  mutationDelete = {};
   query = {};
   queryMany = {};
   subscriptions = [];
@@ -272,7 +273,7 @@ class BaseModel {
    *
    * @returns {Promise<*>}
    */
-  async update() {
+  update() {
     const prepared = this.prepareFieldsVariables();
 
     return this.save(this.mutationUpdate, {
@@ -286,11 +287,22 @@ class BaseModel {
    *
    * @returns {Promise<*>}
    */
-  async create() {
+  create() {
     const prepared = this.prepareFieldsVariables();
 
     return this.save(this.mutationCreate, {
       [this.inputDataKey]: prepared,
+    });
+  }
+
+  /**
+   * Deletes a model item and returns a result
+   *
+   * @returns {Promise<*>}
+   */
+  delete() {
+    return this.save(this.mutationDelete, {
+      [this.primaryKey]: this[this.primaryKey],
     });
   }
 
@@ -445,6 +457,7 @@ class BaseModel {
         await this.getCachedGql('queryMany', `${gqlSrc}/queries/fetch${entityNamePlural}`);
         await this.getCachedGql('mutationCreate', `${gqlSrc}/mutations/create${this.className}`);
         await this.getCachedGql('mutationUpdate', `${gqlSrc}/mutations/update${this.className}`);
+        await this.getCachedGql('mutationDelete', `${gqlSrc}/mutations/delete${this.className}`);
 
         this.documentsLoaded = true;
         resolve();
@@ -478,8 +491,8 @@ class BaseModel {
   }
 
   /**
-   * This function prepared inputFieldsVariables for sending to backend
-   * values must be String (ID) or Array of IDs
+   * Prepares inputFieldsVariables for sending to the backend.
+   * Values must be either String (ID) or Array of Strings (IDs)
    */
   prepareFieldsVariables() {
     const { inputFieldsVariables } = this;
