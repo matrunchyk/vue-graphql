@@ -29,6 +29,8 @@ class BaseModel {
   mutationCreate = {};
   mutationUpdate = {};
   mutationDelete = {};
+  mutationAttach = {};
+  mutationDetach = {};
   query = {};
   queryMany = {};
   subscriptions = [];
@@ -444,6 +446,7 @@ class BaseModel {
       console.info('".fetch" method executed');
     }
     this.setLoading();
+    await this.validateCache();
     try {
       // noinspection JSUnresolvedFunction
       const { data: { [opName]: result } } = await this.vue.$apollo.query({
@@ -531,9 +534,75 @@ class BaseModel {
     return subscribeToMore;
   }
 
+  async attach(models) {
+    const m = Array.isArray(models) ? models : [models];
+
+    if (isDebug()) {
+      console.info('".attach" method executed');
+    }
+
+    await this.loadDocuments();
+    return this.save(this.mutationAttach, {
+      [this.primaryKey]: this[this.primaryKey],
+      [this.inputDataKey]: m.map(m => m[m.primaryKey]),
+    });
+  }
+
+  async detach(models) {
+    const m = Array.isArray(models) ? models : [models];
+
+    if (isDebug()) {
+      console.info('".detach" method executed');
+    }
+
+    await this.loadDocuments();
+    return this.save(this.mutationDetach, {
+      [this.primaryKey]: this[this.primaryKey],
+      [this.inputDataKey]: m.map(m => m[m.primaryKey]),
+    });
+  }
+
   // Helpers
   touch() {
     this.updatedAt = new Date();
+  }
+
+  getCacheAge() {
+    return Number(localStorage.getItem('apollo-cache-persist-age'));
+  }
+
+  refreshCacheAge() {
+    return localStorage.setItem('apollo-cache-persist-age', `${(new Date()).getTime()}`);
+  }
+
+  async validateCache() {
+    const age = this.getCacheAge();
+
+    if (age) {
+      const diffSeconds = (new Date() - new Date(age)) / 1000;
+
+      if (isDebug()) {
+        console.info(`Cache age: ${diffSeconds} seconds`);
+      }
+
+      if (diffSeconds >= 60) {
+        if (isDebug()) {
+          console.info('Purging cache...');
+        }
+        this.refreshCacheAge();
+
+        if (this.$vgmOptions && this.$vgmOptions.cachePersistor) {
+          await this.$vgmOptions.cachePersistor.purge();
+        } else {
+          console.warn(`In order to gain better loading speed & caching support,
+            use "cachePersistor" config key which should be an instance of CachePersistor class
+            of "apollo-cache-persist" package.
+            Details: `);
+        }
+      }
+    } else {
+      this.refreshCacheAge();
+    }
   }
 
   init() {}
@@ -558,6 +627,8 @@ class BaseModel {
         await this.getCachedGql('mutationCreate', `${gqlSrc}/mutations/create${this.className}`);
         await this.getCachedGql('mutationUpdate', `${gqlSrc}/mutations/update${this.className}`);
         await this.getCachedGql('mutationDelete', `${gqlSrc}/mutations/delete${this.className}`);
+        await this.getCachedGql('mutationAttach', `${gqlSrc}/mutations/attach${this.className}`);
+        await this.getCachedGql('mutationDetach', `${gqlSrc}/mutations/detach${this.className}`);
 
         this.documentsLoaded = true;
         resolve();
