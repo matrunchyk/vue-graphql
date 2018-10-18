@@ -482,3 +482,4 @@ Feel free to submit your pull-requests, ideas, proposals and bug reports!
 - Add versioning support
 - Add validation of dynamic fields
 - Create MenuDrawer component
+- Add a configurable operation confirmation when performing some risky operations. For example, automatically display a delete confirmation component when executing `.delete()` method.
