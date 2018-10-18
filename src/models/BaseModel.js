@@ -150,7 +150,7 @@ class BaseModel {
   }
 
   get createRoutePath() {
-    return this.createRoute('delete');
+    return this.createRoute('create');
   }
 
   get listRoutePath() {
@@ -158,7 +158,7 @@ class BaseModel {
   }
 
   /**
-   * Return Froms object
+   * Return Forms object
    *
    * @returns {Form}
    */
