@@ -51,6 +51,20 @@ Vue.use(VueGraphqlModels, {
 });
 ```
 
+## Persisting & Cache
+In your `vue-apollo.js` file, put the following lines:
+
+```
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { CachePersistor } from 'apollo-cache-persist';
+
+export const cachePersistor = new CachePersistor({
+  cache: new InMemoryCache(),
+  storage: window.localStorage,
+  debug: process.env.NODE_ENV !== 'production',
+});
+``` 
+
 ## Basic Usage
 
 Intro:
