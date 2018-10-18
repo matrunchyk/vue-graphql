@@ -30,10 +30,45 @@ or
 
 `yarn add vue-graphql-models`
 
+## Configuration
+
+```
+import VueGraphqlModels from 'vue-graphql-models';
+// import createProvider, { cachePersistor } from 'Lib/vue-apollo';
+
+Vue.use(VueGraphqlModels, {
+  // debug: true,
+  // cachePersistor,
+  dataLoader(path) {
+    return import(/* webpackChunkName: "data/[request]" */ `Data/${path}`);
+  },
+  modelLoader(path) {
+    return import(/* webpackChunkName: "models/[request]" */ `Models/${path}`);
+  },
+  gqlLoader(path) {
+    return import(/* webpackChunkName: "gql/[request]" */ `Gql/${path}.graphql`);
+  },
+});
+```
+
+## Persisting & Cache
+In your `vue-apollo.js` file, put the following lines:
+
+```
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { CachePersistor } from 'apollo-cache-persist';
+
+export const cachePersistor = new CachePersistor({
+  cache: new InMemoryCache(),
+  storage: window.localStorage,
+  debug: process.env.NODE_ENV !== 'production',
+});
+``` 
+
 ## Basic Usage
 
 Intro:
-- Usually website or webapp consists from a page with list of models (list of products, list of categories, list of any other models) as well as page with a single items (or multiple items). The item here is called as `model` and the list of items is a `collection` of `models`.
+- Typical website consists from a page with list of models (list of products, list of categories, list of any other models) as well as page with a single items (or multiple items). The item here is called as `model` and the list of items is a `collection` of `models`.
 - When Vue component is rendering, it usually doesn't have data yet. To avoid errors, we can substitute an empty `Collection` by just using model's method `.emptyCollection()`. To have the same effect for empty model, you can use `.empty()`.
 - You can specify your model class in your Vue component's prop validation.
 - Each collection has the same methods as Laravel Collection class (credits to [collect.js](https://github.com/ecrmnn/collect.js/))
@@ -44,7 +79,7 @@ Intro:
 1. Create a new Model which you want to use in your Vue component, i.e. `Fruit` by extending the imported `BaseModel` class:
 > Fruit.js
 ```
-import BaseModel from 'vue-graphql-models';
+import { BaseModel } from 'vue-graphql-models';
 
 class Fruit extends BaseModel {
   // Getters
@@ -472,14 +507,14 @@ Feel free to submit your pull-requests, ideas, proposals and bug reports!
 ### TODOs:
 - ~~Add CodeSandbox example~~
 - ~~Add Launchpad example for lazy folks~~
-- Create github.io pages with a whole documentation & examples
-- Add relationship support between models (e.g attach/detach/sync/etc)
-- Add even more speed & optimization & caching
+- ~~Create github.io pages with a whole documentation & examples~~
+- ~~Add relationship support between models (e.g attach/detach)~~
+- ~~Add even more speed & optimization & caching~~
 - Rewrite to TypeScript
 - Add subscriptions & events example
 - Add menu event hooks example
 - Write more tests & coverage support
-- Add versioning support
-- Add validation of dynamic fields
+- Add model versioning support
+- ~~Add validation of dynamic fields~~
 - Create MenuDrawer component
 - Add a configurable operation confirmation when performing some risky operations. For example, automatically display a delete confirmation component when executing `.delete()` method.
