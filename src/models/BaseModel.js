@@ -272,7 +272,7 @@ class BaseModel {
     return {
       name: to.camel(`${prefix}${name}`),
       params: {
-        key: this[this.primaryKey],
+        [this.primaryKey]: this[this.primaryKey],
       },
       query: {
         from,
