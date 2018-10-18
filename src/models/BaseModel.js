@@ -138,27 +138,23 @@ class BaseModel {
    * @returns {{name: string, params: {key: string}}}
    */
   get routerPath() {
-    if (typeof this.vue !== 'object') {
-      throw new ConfigurationException(`Vue instance must be VueComponent.
-      Make sure that BaseModel.vue contains your local vue instance.`);
-    }
+    return this.createRoute();
+  }
 
-    if (typeof this.vue.$route !== 'object') {
-      throw new ConfigurationException(`It seems like vue-router is not installed.
-      Make sure that you have installed vue-router and configured.`);
-    }
+  get editRoutePath() {
+    return this.createRoute('edit');
+  }
 
-    const from = this.vue.$route.fullPath;
+  get deleteRoutePath() {
+    return this.createRoute('delete');
+  }
 
-    return {
-      name: to.snake(this.className),
-      params: {
-        key: this[this.primaryKey],
-      },
-      query: {
-        from,
-      },
-    };
+  get createRoutePath() {
+    return this.createRoute('delete');
+  }
+
+  get listRoutePath() {
+    return this.createRoute('', true);
   }
 
   /**
@@ -252,6 +248,38 @@ class BaseModel {
     this.init();
     Object.assign(this.initialState, processedParams);
   }
+
+  /**
+   * Throws an exception whether vue our vue-router is not installed
+   */
+  validateRouter() {
+    if (typeof this.vue !== 'object') {
+      throw new ConfigurationException(`Vue instance must be VueComponent.
+      Make sure that BaseModel.vue contains your local vue instance.`);
+    }
+
+    if (typeof this.vue.$route !== 'object') {
+      throw new ConfigurationException(`It seems like vue-router is not installed.
+      Make sure that you have installed vue-router and configured.`);
+    }
+  }
+
+  createRoute(prefix = '', multiple = false) {
+    this.validateRouter();
+    const from = this.vue.$route.fullPath;
+    const name = multiple ? pluralize(this.className) : this.className;
+
+    return {
+      name: to.camel(`${prefix}${name}`),
+      params: {
+        key: this[this.primaryKey],
+      },
+      query: {
+        from,
+      },
+    };
+  }
+
   /**
    * Processes casts
    */
