@@ -80,7 +80,7 @@ const config = {
   externals: {
     vue: 'vue',
     moment: 'moment',
-    vuexRouterSync: 'vuex-router-sync'
+    'vuex-router-sync': 'vuex-router-sync'
   }
 };
 
