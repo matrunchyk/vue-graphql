@@ -79,7 +79,8 @@ const config = {
   },
   externals: {
     vue: 'vue',
-    moment: 'moment'
+    moment: 'moment',
+    vuexRouterSync: 'vuex-router-sync'
   }
 };
 
