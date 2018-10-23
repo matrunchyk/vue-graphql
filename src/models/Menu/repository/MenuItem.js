@@ -40,7 +40,7 @@ class MenuItem {
     const { vue: { $store }} = this;
 
     if (route && route.path) {
-      route = Object.assign(route, { params: { key: $store.getters['route/key'] } });
+      route = Object.assign(route, { params: { _key: $store.getters['route/_key'] } });
     }
     const { href } = this;
 
