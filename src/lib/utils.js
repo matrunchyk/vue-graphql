@@ -164,6 +164,13 @@ function spawn(constructor, args = []) {
  * console.log(c.d); // undefined
  */
 function cloneDeep(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
+
+/**
+ * Removes __typename from object recursively
+ */
+function stripTypename(obj) {
   return JSON.parse(JSON.stringify(obj, (k, v) => (k === '__typename' ? undefined : v)));
 }
 
@@ -440,6 +447,7 @@ export {
   sleep,
   intersect,
   cloneDeep,
+  stripTypename,
   findRecursive,
   findRouteMetas
 };
