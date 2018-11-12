@@ -408,7 +408,7 @@ class BaseModel {
       if (isDebug()) {
         console.info('Save: Performing Apollo mutation...');
       }
-      const result = await this.vue.$apollo.mutate({
+      await this.vue.$apollo.mutate({
         mutation,
         variables,
         // optimisticResponse: {
@@ -416,15 +416,17 @@ class BaseModel {
         //   [opName]: this,
         // },
         // Run hooks
-        update: (store, { data }) => this.updated(store, data[opName]),
+        update: (store, { data }) => this.saved({
+          store,
+          query: mutation,
+          queryName: opName,
+          variables,
+        }, data[opName]),
       });
 
       if (isDebug()) {
         console.info('Save: Apollo mutation status: OK');
       }
-
-      // Update properties returned from a server
-      defineProperties(this, result.data[opName]);
     } catch (e) {
       if (isDebug()) {
         console.info('Save: Apollo mutation status: FAIL');
@@ -748,20 +750,25 @@ class BaseModel {
     this.loading = loading;
   }
 
-  // Hooks
-  created(props) {
-    if (isDebug()) {
-      console.info('Created hook fired');
-    }
-    defineProperties(this, props);
-  }
-
-  updated(store, props) {
+  saved({
+    store,
+    query,
+    queryName,
+    variables,
+  }, props) {
     if (isDebug()) {
       console.info('Updated hook fired');
     }
     defineProperties(this, props);
+    this.updated(store, props);
   }
+
+  /**
+   * @deprecated Please use '.saved' hook instead
+   * @param store
+   * @param props
+   */
+  updated(store, props) {}
 }
 
 export default BaseModel;
