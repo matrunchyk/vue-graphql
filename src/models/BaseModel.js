@@ -403,24 +403,6 @@ class BaseModel {
     // Change updated at
     this.touch();
 
-    const opts = {
-      mutation,
-      variables,
-      // optimisticResponse: {
-      //   __typename: 'Mutation',
-      //   [opName]: this,
-      // },
-      // Run hooks
-      update: (store, { data }) => this.saved({
-        store,
-        query: mutation,
-        queryName: opName,
-        variables,
-      }, data[opName]),
-    };
-
-    const operation = this.vue.$apollo.mutate;
-
     try {
       // noinspection JSUnresolvedFunction
       /**
@@ -429,18 +411,26 @@ class BaseModel {
       if (isDebug()) {
         console.info('Save: Performing Apollo mutation...');
       }
-      await operation(opts);
+      await this.vue.$apollo.mutate({
+        mutation,
+        variables,
+        // optimisticResponse: {
+        //   __typename: 'Mutation',
+        //   [opName]: this,
+        // },
+        // Run hooks
+        update: (store, { data }) => this.saved({
+          store,
+          query: mutation,
+          queryName: opName,
+          variables,
+        }, data[opName]),
+      });
 
       if (isDebug()) {
         console.info('Save: Apollo mutation status: OK');
       }
     } catch (e) {
-      Object.assign(e, {
-        originalRequest: {
-          operation,
-          opts,
-        },
-      });
       this.setError(e);
       this.failed(e);
     } finally {
@@ -466,19 +456,15 @@ class BaseModel {
     // Sets a loading flag on
     this.setLoading();
 
-    const opts = {
-      errorPolicy: 'all',
-      query,
-      variables,
-      subscribeToMore,
-    };
-
-    const operation = this.vue.$apollo.query;
-
     await this.validateCache();
     try {
       // noinspection JSUnresolvedFunction
-      const { data: { [opName]: result } } = await operation(opts);
+      const { data: { [opName]: result } } = await this.vue.$apollo.query({
+        errorPolicy: 'all',
+        query,
+        variables,
+        subscribeToMore,
+      });
 
       if (isDebug()) {
         console.info('Fetch: Apollo mutation status: OK');
@@ -508,17 +494,12 @@ class BaseModel {
       }
       return this.hydrate(cloneDeep(result));
     } catch (e) {
-      Object.assign(e, {
-        originalRequest: {
-          operation,
-          opts,
-        },
-      });
       this.setError(e);
       this.failed(e);
       if (e instanceof BaseException) {
         throw e;
       }
+      console.error(e.message);
       return wantsMany ?
         new Collection([]) :
         this.hydrate({});
