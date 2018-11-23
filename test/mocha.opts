@@ -1,3 +1,7 @@
 -r jsdom-global/register
 -r @babel/register
+-r test/mocha.env.js
 -c
+--reporter spec
+--recursive
+

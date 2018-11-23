@@ -2,7 +2,7 @@
 
 import chai from 'chai';
 import Vue from 'vue';
-import VueGraphqlModels, { BaseModel, Exceptions, Utils } from '../lib/vue-graphql-models.min';
+import VueGraphqlModels, { BaseModel, Exceptions, Utils } from '../src/index';
 
 Vue.use(VueGraphqlModels, {
   dataLoader(path) {

@@ -38,6 +38,7 @@ class BaseModel {
   createdAt = new Date();
   createdBy = {};
   loading = false;
+  error = null;
   defaultSortBy = 'createdBy';
   inputFields = [];
   primaryKey = '_key';
@@ -395,6 +396,8 @@ class BaseModel {
     }
     const opName = getGQLDocumentName(mutation, this.className);
 
+    // Clears an error
+    this.setError();
     // Sets a loading flag on
     this.setLoading();
     // Change updated at
@@ -428,13 +431,13 @@ class BaseModel {
         console.info('Save: Apollo mutation status: OK');
       }
     } catch (e) {
-      if (isDebug()) {
-        console.info('Save: Apollo mutation status: FAIL');
-      }
       console.warn(e.message);
+      this.setError(e);
+      this.failed(e);
     } finally {
       // Sets a loading flag off
       this.setLoading(false);
+      this.finished();
     }
     return this;
   }
@@ -447,7 +450,13 @@ class BaseModel {
     if (isDebug()) {
       console.info('".fetch" method executed');
     }
+
+    // Clears an error
+    this.setError();
+
+    // Sets a loading flag on
     this.setLoading();
+
     await this.validateCache();
     try {
       // noinspection JSUnresolvedFunction
@@ -486,9 +495,8 @@ class BaseModel {
       }
       return this.hydrate(cloneDeep(result));
     } catch (e) {
-      if (isDebug()) {
-        console.info('Fetch: Apollo mutation status: FAIL');
-      }
+      this.setError(e);
+      this.failed(e);
       if (e instanceof BaseException) {
         throw e;
       }
@@ -498,6 +506,7 @@ class BaseModel {
         this.hydrate({});
     } finally {
       this.setLoading(false);
+      this.finished();
     }
   }
 
@@ -587,7 +596,7 @@ class BaseModel {
         console.info(`Cache age: ${diffSeconds} seconds`);
       }
 
-      if (diffSeconds >= 60) {
+      if (diffSeconds >= ((this.$vgmOptions || {}).cacheLife || 60)) {
         if (isDebug()) {
           console.info('Purging cache...');
         }
@@ -750,6 +759,10 @@ class BaseModel {
     this.loading = loading;
   }
 
+  setError(error = null) {
+    this.error = error;
+  }
+
   saved({
     store,
     query,
@@ -761,6 +774,21 @@ class BaseModel {
     }
     defineProperties(this, props);
     this.updated(store, props);
+  }
+
+  /**
+   * Triggers on success or failure
+   */
+  finished() {}
+
+  /**
+   * Triggers when error on error
+   * @param e
+   */
+  failed(e) {
+    if (isDebug()) {
+      console.info('Operation failed', e);
+    }
   }
 
   /**

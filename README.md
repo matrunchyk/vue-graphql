@@ -3,7 +3,7 @@
 Universal library which helps to build OOP-driven GraphQL based models for Vue components.
 Influenced by Laravel Eloquent Models & Collections.
 
-![Travis](https://api.travis-ci.org/digitalideastudio/vue-graphql-models.svg?branch=master)
+![Travis](https://api.travis-ci.org/digitalideastudio/vue-graphql-models.svg?branch=master) [![codecov](https://codecov.io/gh/digitalideastudio/vue-graphql-models/branch/master/graph/badge.svg)](https://codecov.io/gh/digitalideastudio/vue-graphql-models)
 
 ## Features
 
@@ -39,6 +39,7 @@ import VueGraphqlModels from 'vue-graphql-models';
 Vue.use(VueGraphqlModels, {
   // debug: true,
   // cachePersistor,
+  cacheLife: 60,
   dataLoader(path) {
     return import(/* webpackChunkName: "data/[request]" */ `Data/${path}`);
   },
@@ -53,7 +54,7 @@ Vue.use(VueGraphqlModels, {
 
 ## Documentation
 
-Please see GitHub pages [documentation](https://digitalideastudio.github.io/vue-graphql-models/#/) for more details.
+#####Please see GitHub pages [documentation](https://digitalideastudio.github.io/vue-graphql-models/#/) for more details.=
 
 ## Contribution
 

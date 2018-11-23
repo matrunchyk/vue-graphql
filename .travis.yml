@@ -4,3 +4,5 @@ node_js:
   - "10"
 cache: yarn
 
+before_script:
+  - yarn danger ci
