@@ -5,8 +5,7 @@ Influenced by Laravel Eloquent Models & Collections.
 
 
 [![npm](https://img.shields.io/npm/v/vue-graphql-models.svg)](https://www.npmjs.com/package/vue-graphql-models) [![GitHub stars](https://img.shields.io/github/stars/digitalideastudio/vue-graphql-models.svg)](https://github.com/digitalideastudio/vue-graphql-models/stargazers)
- ![Travis](https://api.travis-ci.org/digitalideastudio/vue-graphql-models.svg?branch=master) [![codecov](https://codecov.io/gh/digitalideastudio/vue-graphql-models/branch/master/graph/badge.svg)](https://codecov.io/gh/digitalideastudio/vue-graphql-models)  
-[![GitHub license](https://img.shields.io/github/license/digitalideastudio/vue-graphql-models.svg)](https://github.com/digitalideastudio/vue-graphql-models/blob/master/LICENSE) 
+ ![Travis](https://api.travis-ci.org/digitalideastudio/vue-graphql-models.svg?branch=master) [![codecov](https://codecov.io/gh/digitalideastudio/vue-graphql-models/branch/master/graph/badge.svg)](https://codecov.io/gh/digitalideastudio/vue-graphql-models) [![GitHub license](https://img.shields.io/github/license/digitalideastudio/vue-graphql-models.svg)](https://github.com/digitalideastudio/vue-graphql-models/blob/master/LICENSE) 
 
 
 
