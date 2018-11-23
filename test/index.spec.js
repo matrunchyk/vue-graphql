@@ -59,3 +59,26 @@ describe('Given an instance of my InvalidArgumentException library', () => {
     });
   });
 });
+
+describe('Given Utils object', () => {
+  describe('when I check whether it is a debug mode', () => {
+    it('should return undefined', () => {
+      expect(Utils.isDebug()).to.be.false;
+    });
+  });
+  describe('when I check whether it is a mobile', () => {
+    it('should return false', () => {
+      expect(Utils.isMobile()).to.be.false;
+    });
+  });
+  describe('when I pass a string in lowercase', () => {
+    it('should return upper-cased words', () => {
+      expect(Utils.ucwords('This IS a TEST')).to.be.equal('This IS A TEST');
+    });
+  });
+  describe('when I pass a string in mixed case', () => {
+    it('should return string with lower case of 1st word', () => {
+      expect(Utils.lowerCaseFirst('THIS IS a TEST')).to.be.equal('tHIS IS a TEST');
+    });
+  });
+});

@@ -14,7 +14,7 @@ import pkg from '../../package';
  * @returns {Boolean}
  */
 function isDebug() {
-  return Vue.prototype.$vgmOptions && Vue.prototype.$vgmOptions.debug;
+  return !!(Vue.prototype.$vgmOptions && Vue.prototype.$vgmOptions.debug);
 }
 
 /**
