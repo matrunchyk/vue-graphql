@@ -32,3 +32,5 @@ node_modules
 
 .DS_Store
 /.nyc_output/*.json
+codecov.yml
+
