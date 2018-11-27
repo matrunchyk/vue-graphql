@@ -332,6 +332,32 @@ class BaseModel {
   }
 
   /**
+   * Finds a single model item
+   *
+   * @property {Object} variables - variables to filter
+   * @returns {Promise<{BaseModel[]}>}
+   */
+  find(variables = {}) {
+    if (isDebug()) {
+      logger('".get" method executed');
+    }
+    return this.fetch(this.query, variables);
+  }
+
+  /**
+   * Finds multiple model item
+   *
+   * @property {Object} variables - variables to filter
+   * @returns {Promise<{BaseModel[]}>}
+   */
+  get(variables = {}) {
+    if (isDebug()) {
+      logger('".get" method executed');
+    }
+    return this.fetch(this.queryMany, variables);
+  }
+
+  /**
    * Updates a model item and returns updated
    *
    * @returns {Promise<*>}
