@@ -1,7 +1,8 @@
 import Collection from '../Collection';
 import Vue from 'vue';
 import {
-  spawn,
+  logger,
+  spawn
 } from '../../lib/utils';
 
 export default class Field {
@@ -85,7 +86,7 @@ export default class Field {
           this.selectOptions = items;
         })
         .catch((err) => {
-          console.error(err);
+          logger(err);
         });
     } else if (this.sourceType === 'collection') {
       this.getCollection()
@@ -93,7 +94,7 @@ export default class Field {
           this.selectOptions = items;
         })
         .catch((err) => {
-          console.error(err);
+          logger(err);
         });
     }
   }
@@ -106,7 +107,7 @@ export default class Field {
       this.setLoading(false);
       return items;
     } catch (err) {
-      console.error(err);
+      logger(err);
       this.setLoading(false);
       return [];
     }
@@ -121,7 +122,7 @@ export default class Field {
       this.setLoading(false);
       return collection;
     } catch (err) {
-      console.error(err);
+      logger(err);
       this.setLoading(false);
       return Field.emptyCollection();
     }

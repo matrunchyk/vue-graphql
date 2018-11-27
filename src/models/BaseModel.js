@@ -11,6 +11,7 @@ import {
   cloneDeep,
   version,
   isDebug,
+  logger,
 } from '../lib/utils';
 import Collection from './Collection';
 import Form from './Forms/Form';
@@ -26,6 +27,7 @@ const gqlCache = {};
 class BaseModel {
   __typename = 'BaseModel';
   _key = '';
+  _result = null;
   mutationCreate = {};
   mutationUpdate = {};
   mutationDelete = {};
@@ -160,6 +162,13 @@ class BaseModel {
     return this.createRoute('', true);
   }
 
+  get result() {
+    if (this._result instanceof Collection) {
+      return this._result;
+    }
+    return new Collection();
+  }
+
   /**
    * Return Forms object
    *
@@ -183,7 +192,7 @@ class BaseModel {
     const instance = this.empty(false);
 
     if (isDebug()) {
-      console.info('".find" method executed');
+      logger('".find" method executed');
     }
     await instance.loadDocuments();
     return instance.fetch(instance.query, variables);
@@ -199,7 +208,7 @@ class BaseModel {
     const instance = this.empty(false);
 
     if (isDebug()) {
-      console.info('".get" method executed');
+      logger('".get" method executed');
     }
     await instance.loadDocuments();
     return instance.fetch(instance.queryMany, variables);
@@ -213,7 +222,7 @@ class BaseModel {
    */
   static emptyCollection() {
     if (isDebug()) {
-      console.info('Spawning an empty collection...');
+      logger('Spawning an empty collection...');
     }
     return new Collection();
   }
@@ -226,7 +235,7 @@ class BaseModel {
    */
   static empty(boot = true) {
     if (isDebug()) {
-      console.info('Spawning an empty model...');
+      logger('Spawning an empty model...');
     }
     // noinspection JSValidateTypes
     return spawn(this, [{ boot }]);
@@ -288,7 +297,7 @@ class BaseModel {
    */
   processCasts(params) {
     if (isDebug()) {
-      console.info('Processing casts...');
+      logger('Processing casts...');
     }
     const casted = Object.assign({}, params);
 
@@ -331,7 +340,7 @@ class BaseModel {
     const prepared = this.prepareFieldsVariables();
 
     if (isDebug()) {
-      console.info('".update" method executed');
+      logger('".update" method executed');
     }
 
     await this.loadDocuments();
@@ -350,7 +359,7 @@ class BaseModel {
     const prepared = this.prepareFieldsVariables();
 
     if (isDebug()) {
-      console.info('".create" method executed');
+      logger('".create" method executed');
     }
     await this.loadDocuments();
     return this.save(this.mutationCreate, {
@@ -365,7 +374,7 @@ class BaseModel {
    */
   async delete() {
     if (isDebug()) {
-      console.info('".delete" method executed');
+      logger('".delete" method executed');
     }
 
     await this.loadDocuments();
@@ -383,7 +392,7 @@ class BaseModel {
    */
   async save(mutation, variables = {}) {
     if (isDebug()) {
-      console.info('".save" method executed');
+      logger('".save" method executed');
     }
     if (typeof this.vue !== 'object') {
       throw new ConfigurationException(`Vue instance must be VueComponent.
@@ -409,7 +418,7 @@ class BaseModel {
        * Perform a mutation
        */
       if (isDebug()) {
-        console.info('Save: Performing Apollo mutation...');
+        logger('Save: Performing Apollo mutation...');
       }
       await this.vue.$apollo.mutate({
         mutation,
@@ -428,7 +437,7 @@ class BaseModel {
       });
 
       if (isDebug()) {
-        console.info('Save: Apollo mutation status: OK');
+        logger('Save: Apollo mutation status: OK');
       }
     } catch (e) {
       this.setError(e);
@@ -447,7 +456,7 @@ class BaseModel {
     const wantsMany = variables._key === undefined;
 
     if (isDebug()) {
-      console.info('".fetch" method executed');
+      logger('".fetch" method executed');
     }
 
     // Clears an error
@@ -467,8 +476,9 @@ class BaseModel {
       });
 
       if (isDebug()) {
-        console.info('Fetch: Apollo mutation status: OK');
+        logger('Fetch: Apollo mutation status: OK');
       }
+      this._result = result;
 
       if (!wantsMany && Array.isArray(result)) {
         throw new ServerErrorException('Was expected an object but received an array.');
@@ -484,13 +494,13 @@ class BaseModel {
         const sorted = filtered.sortBy(this.defaultSortBy);
 
         if (isDebug()) {
-          console.info('Fetch: hydrating a collection');
+          logger('Fetch: hydrating a collection');
         }
         return sorted.map(i => this.hydrate(i));
       }
 
       if (isDebug()) {
-        console.info('Fetch: hydrating a single model');
+        logger('Fetch: hydrating a single model');
       }
       return this.hydrate(cloneDeep(result));
     } catch (e) {
@@ -499,7 +509,7 @@ class BaseModel {
       if (e instanceof BaseException) {
         throw e;
       }
-      console.error(e.message);
+      logger(e.message);
       return wantsMany ?
         new Collection([]) :
         this.hydrate({});
@@ -548,7 +558,7 @@ class BaseModel {
     const m = Array.isArray(models) ? models : [models];
 
     if (isDebug()) {
-      console.info('".attach" method executed');
+      logger('".attach" method executed');
     }
 
     await this.loadDocuments();
@@ -562,7 +572,7 @@ class BaseModel {
     const m = Array.isArray(models) ? models : [models];
 
     if (isDebug()) {
-      console.info('".detach" method executed');
+      logger('".detach" method executed');
     }
 
     await this.loadDocuments();
@@ -592,19 +602,19 @@ class BaseModel {
       const diffSeconds = (new Date() - new Date(age)) / 1000;
 
       if (isDebug()) {
-        console.info(`Cache age: ${diffSeconds} seconds`);
+        logger(`Cache age: ${diffSeconds} seconds`);
       }
 
       if (diffSeconds >= ((this.$vgmOptions || {}).cacheLife || 60)) {
         if (isDebug()) {
-          console.info('Purging cache...');
+          logger('Purging cache...');
         }
         this.refreshCacheAge();
 
         if (this.$vgmOptions && this.$vgmOptions.cachePersistor) {
           await this.$vgmOptions.cachePersistor.purge();
         } else {
-          console.warn(`In order to gain better loading speed & caching support,
+          logger(`In order to gain better loading speed & caching support,
             use "cachePersistor" config key which should be an instance of CachePersistor class
             of "apollo-cache-persist" package.
             Details: `);
@@ -619,11 +629,11 @@ class BaseModel {
 
   async loadDocuments() {
     if (isDebug()) {
-      console.info('Loading documents...');
+      logger('Loading documents...');
     }
     if (this.documentsLoaded) {
       if (isDebug()) {
-        console.info('Documents already have loaded, exiting.');
+        logger('Documents already have loaded, exiting.');
       }
       return Promise.resolve();
     }
@@ -657,21 +667,21 @@ class BaseModel {
    */
   async getCachedGql(propName, path) {
     if (isDebug()) {
-      console.info(`Inititated retrieval of ${path} from a cache...`);
+      logger(`Inititated retrieval of ${path} from a cache...`);
     }
     if (this[propName] === false) {
       if (isDebug()) {
-        console.info(`"${propName}" is set to 'false', skipping.`);
+        logger(`"${propName}" is set to 'false', skipping.`);
       }
       return;
     }
     if ((!this[propName] || !this[propName].definitions)) {
       if (isDebug()) {
-        console.info(`"${propName}" was not set, proceeding to an autoloading...`);
+        logger(`"${propName}" was not set, proceeding to an autoloading...`);
       }
       if (!gqlCache[path]) {
         if (isDebug()) {
-          console.info(`No cache found for ${path}, proceeding to a loader...`);
+          logger(`No cache found for ${path}, proceeding to a loader...`);
         }
         gqlCache[path] = await getGQLDocument(
           this.gqlLoader,
@@ -680,7 +690,7 @@ class BaseModel {
       }
 
       if (isDebug()) {
-        console.info(`Caching "${propName}" for ${path}`);
+        logger(`Caching "${propName}" for ${path}`);
       }
       this[propName] = gqlCache[path];
     }
@@ -769,7 +779,7 @@ class BaseModel {
     variables,
   }, props) {
     if (isDebug()) {
-      console.info('Updated hook fired');
+      logger('Updated hook fired');
     }
     defineProperties(this, props);
     this.updated(store, props);
@@ -785,8 +795,9 @@ class BaseModel {
    * @param e
    */
   failed(e) {
+    this._result = null;
     if (isDebug()) {
-      console.info('Operation failed', e);
+      logger('Operation failed: ', e.message);
     }
   }
 

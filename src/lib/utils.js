@@ -64,6 +64,23 @@ function lowerCaseFirst(str) {
   return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
+function logger(arg1, arg2) {
+  if (arg2) {
+    return console.log(
+      '%cVGM',
+      'background: #DFC35E; color: white; padding: 2px 4px; border-radius: 3px; font-weight: bold;',
+      arg1,
+      arg2
+    );
+  }
+
+  return console.log(
+    '%cVGM',
+    'background: #DFC35E; color: white; padding: 2px 4px; border-radius: 3px; font-weight: bold;',
+    arg1
+  );
+}
+
 /**
  * Formats bytes to human readable string
  *
@@ -110,12 +127,12 @@ function getGQLDocument(loader, path) {
   const docName = segments[segments.length - 1];
 
   if (isDebug()) {
-    console.info(`Passing loading process of ${path} to a loader....`);
+    logger(`Passing loading process of ${path} to a loader....`);
   }
   return loader(path)
     .catch(() => {
       if (isDebug()) {
-        console.info(`No GQL found using path ${path}. Skipping.`);
+        logger(`No GQL found using path ${path}. Skipping.`);
       }
       return {
         [docName]: {},
@@ -123,7 +140,7 @@ function getGQLDocument(loader, path) {
     })
     .then(({ [docName]: doc }) => {
       if (isDebug()) {
-        console.info(`${path} has been imported successfully.`);
+        logger(`${path} has been imported successfully.`);
       }
       return doc;
     });
@@ -138,7 +155,7 @@ function getGQLDocument(loader, path) {
  */
 function spawn(constructor, args = []) {
   if (isDebug()) {
-    console.info(`Spawning a new instance of ${constructor.name}`);
+    logger(`Spawning a new instance of ${constructor.name}`);
   }
   function F() {
     return constructor.apply(this, args);
@@ -449,5 +466,6 @@ export {
   cloneDeep,
   stripTypename,
   findRecursive,
-  findRouteMetas
+  findRouteMetas,
+  logger,
 };
