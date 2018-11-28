@@ -337,10 +337,11 @@ class BaseModel {
    * @property {Object} variables - variables to filter
    * @returns {Promise<{BaseModel[]}>}
    */
-  find(variables = {}) {
+  async find(variables = {}) {
     if (isDebug()) {
       logger('".get" method executed');
     }
+    await this.loadDocuments();
     return this.fetch(this.query, variables);
   }
 
@@ -350,10 +351,11 @@ class BaseModel {
    * @property {Object} variables - variables to filter
    * @returns {Promise<{BaseModel[]}>}
    */
-  get(variables = {}) {
+  async get(variables = {}) {
     if (isDebug()) {
       logger('".get" method executed');
     }
+    await this.loadDocuments();
     return this.fetch(this.queryMany, variables);
   }
 
