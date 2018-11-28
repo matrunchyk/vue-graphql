@@ -163,6 +163,9 @@ class BaseModel {
   }
 
   get result() {
+    if (Array.isArray(this._result)) {
+      return new Collection(this._result);
+    }
     if (this._result instanceof Collection) {
       return this._result;
     }
