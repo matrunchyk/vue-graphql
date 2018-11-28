@@ -293,7 +293,7 @@ function sortBy(items, sortOpts = {}) {
  * @param source {object[]} Source array to find in
  * @param key {string} Object key to search by
  * @param value {any} Key value to search by
- * @param entriesKey='entries' {string} A entries key to go to the deeper level by
+ * @param entriesKey='entries' {string} An entries key to go to the deeper level by
  * @returns {object|null}
  * @example
  * findRecursive([
@@ -351,24 +351,24 @@ function findRecursive(source, key, value, entriesKey = 'entries') {
 /**
  * Picks selected items from the object
  *
- * @param source {Object}
- * @param selected {Array}
+ * @param source {Object} Source object
+ * @param selected {Array} Keys to select
  * @returns {*|{}}
  * @example
- * pick({ a: 1, b: 2, c: 3}, ['a', 'c']) // Returns {a: 1, c: 2}
+ * pick({ a: 1, b: 2, c: 3}, ['a', 'c']) // Returns {a: 1, c: 3}
  * pick({ a: 1, b: 2, c: 3}, ['a', 'd']) // Returns {a: 1}
  * pick({ a: 1, b: 2, c: 3}, []) // Returns {}
  * pick({ a: 1, b: 2, c: { d: 1} }, ['c']) // Returns { c: { d: 1 } }
  */
 function pick(source = {}, selected = []) {
-  return selected.reduce((obj, key) => ({ ...obj, [key]: source[key] }), {});
+  return selected.reduce((obj, key) => source[key] ? ({ ...obj, [key]: source[key] }) : obj, {});
 }
 
 /**
- * Retrieves a document name of GraphQL document
+ * Returns a document name of GraphQL document
  *
- * @param document {GraphQLDocument}
- * @param callerClass {String}
+ * @param document {Object} GQL Document
+ * @param callerClass {String} Calling class
  * @returns {String}
  */
 function getGQLDocumentName(document, callerClass = 'model class') {
@@ -407,12 +407,12 @@ function getGQLDocumentName(document, callerClass = 'model class') {
  * > "x"
  */
 function defineProperties(source = {}, target = {}) {
-  return Object.defineProperties(source, Object.getOwnPropertyDescriptors(target));
+  Object.assign(target, Object.defineProperties(source, Object.getOwnPropertyDescriptors(target)));
 }
 
 /* File */
 /**
- * Reads a file into Array Buffer
+ * Returns a Promise with Array Buffer read from a blob
  *
  * @param file {Blob} Blob-like structure to read from
  * @returns {Promise<any>}

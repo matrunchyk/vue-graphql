@@ -15,7 +15,7 @@ Vue.use(VueGraphqlModels, {
   },
   gqlLoader(path) {
     return import(/* webpackChunkName: "gql/[request]" */ `Gql/${path}.graphql`);
-  },
+  }
 });
 
 chai.expect();
@@ -44,6 +44,7 @@ describe('Given an instance of my Model based on BaseModel', () => {
     class MyModel extends BaseModel {
       __typename = 'MyModel';
     }
+
     lib = new MyModel();
   });
   describe('when I override with the __typename', () => {
@@ -98,7 +99,7 @@ describe('Given Utils object', () => {
   describe('when I pass url and data', () => {
     it('should make http post and retrieve a json value', async () => {
       const examplePost = {
-        foo: 'bar',
+        foo: 'bar'
       };
 
       fetchMock.post('https://example.com', examplePost);
@@ -111,7 +112,7 @@ describe('Given Utils object', () => {
   describe('when I pass loader function and path', () => {
     it('should return a GQL document', async () => {
       const obj = {
-        a: 1,
+        a: 1
       };
       const doc = { fetchPost: obj };
       const loader = () => Promise.resolve(doc);
@@ -137,6 +138,7 @@ describe('Given Utils object', () => {
           this.param2 = param2;
         }
       }
+
       const dyn = Utils.spawn(Dynamic, ['A', 'B']);
 
       expect(dyn).to.be.an.instanceof(Dynamic);
@@ -145,4 +147,210 @@ describe('Given Utils object', () => {
       expect(dyn.testProp).to.be.equal('testVal');
     });
   });
+  describe('when I pass some original object', () => {
+    it('should return a new cloned object ', () => {
+      const original = {
+        a: 1,
+        b: 2,
+        c: {
+          d: '1'
+        },
+        e: ['f', 'g', { h: 1 }]
+      };
+      const cloned = Utils.cloneDeep(original);
+
+      expect(cloned).to.be.eql(original);
+      expect(cloned).to.be.not.equal(original);
+    });
+  });
+  describe('when I pass some original object with __typename', () => {
+    it('should return a new cloned object without __typename', () => {
+      const original = {
+        __typename: 'TypeA',
+        a: 1,
+        b: 2,
+        c: {
+          __typename: 'TypeB',
+          d: '1'
+        },
+        e: ['f', 'g', { h: 1, __typename: 'TypeC' }]
+      };
+      const cloned = Utils.stripTypename(original);
+
+      expect(cloned).to.be.not.eql(original);
+      expect(cloned).to.be.not.equal(original);
+      expect(cloned.a).to.be.equal(original.a);
+      expect(cloned.__typename).to.be.equal(undefined);
+      expect(cloned.b).to.be.equal(original.b);
+      expect(cloned.c.d).to.be.equal(original.c.d);
+      expect(cloned.c.__typename).to.be.equal(undefined);
+      expect(cloned.e[0]).to.be.equal(original.e[0]);
+      expect(cloned.e[1]).to.be.equal(original.e[1]);
+      expect(cloned.e[2].h).to.be.equal(original.e[2].h);
+      expect(cloned.e[2].__typename).to.be.equal(undefined);
+    });
+  });
+  describe('when I pass Vue-router route object', () => {
+    it('should return a merged meta object for all matched route objects', () => {
+      const route = {
+        matched: [
+          { meta: { a: 1, b: 2 } },
+          { meta: { c: 4, b: 3 } }
+        ]
+      };
+      const metas = Utils.findRouteMetas(route);
+
+      expect(metas.a).to.be.equal(1);
+      expect(metas.b).to.be.equal(3);
+      expect(metas.c).to.be.equal(4);
+    });
+  });
+  describe('when I pass two arrays', () => {
+    it('should return an array of items matched in both arrays', () => {
+      expect(Utils.intersect([], [])).to.be.eql([]);
+      expect(Utils.intersect([123, 456], [])).to.be.eql([]);
+      expect(Utils.intersect([123, 456, 789], [789, 123])).to.be.eql([123, 789]);
+    });
+  });
+  describe('when I pass an array to sort and sort keys with its directions', () => {
+    it('should return sorted array of objects by given sort options w/o mutating the original', () => {
+      expect(Utils.sortBy([
+        { weight: 1 },
+        { weight: 3 },
+        { weight: 2 },
+        { weight: 10, name: 'ttt' },
+        { weight: 8 },
+        { name: 'bbb' },
+        { weight: 0, name: 'aaa' },
+        { weight: 10, name: 'lll' },
+        { weight: 9 }
+      ], { weight: 'desc', name: 'asc' })).to.be.eql([
+        { weight: 10, name: 'lll' },
+        { weight: 10, name: 'ttt' },
+        { weight: 9 },
+        { weight: 8 },
+        { weight: 3 },
+        { weight: 2 },
+        { weight: 1 },
+        { weight: 0, name: 'aaa' },
+        { name: 'bbb' }
+      ]);
+    });
+  });
+
+  // findRecursive
+  describe('when I pass function parameters', () => {
+    it('should return a found object in array of objects recursively by object key', () => {
+      expect(Utils.findRecursive([
+        {
+          id: 123,
+          name: 'Test 1',
+          entries: []
+        },
+        {
+          id: 456,
+          name: 'Test 2',
+          entries: [
+            {
+              id: 789,
+              name: 'Test 3',
+              entries: []
+            }
+          ]
+        }
+      ], 'id', 789)).to.be.eql({ id: 789, name: 'Test 3', entries: [] });
+    });
+    expect(Utils.findRecursive([
+      {
+        id: 123,
+        name: 'Test 1',
+        files: []
+      },
+      {
+        id: 456,
+        name: 'Test 2',
+        files: [
+          {
+            id: 789,
+            name: 'Test 3',
+            files: []
+          }
+        ]
+      }
+    ], 'id', 789, 'files')).to.be.eql({ id: 789, name: 'Test 3', files: [] });
+  });
+
+  // pick
+  describe('when I pass a source object and keys to select', () => {
+    it('should return selected items from the object', () => {
+      expect(Utils.pick({ a: 1, b: 2, c: 3 }, ['a', 'c'])).to.be.eql({ a: 1, c: 3 });
+      expect(Utils.pick({ a: 1, b: 2, c: 3 }, ['a', 'd'])).to.be.eql({ a: 1 });
+      expect(Utils.pick({ a: 1, b: 2, c: 3 }, [])).to.be.eql({});
+      expect(Utils.pick({ a: 1, b: 2, c: { d: 1 } }, ['c'])).to.be.eql({ c: { d: 1 } });
+    });
+  });
+
+  // getGQLDocumentName
+  describe('when I pass GQL document and calling class', () => {
+    it('should return a document name of GraphQL document', () => {
+      const fakeGQLDoc = {
+        definitions: [
+          { kind: 'SomethingElse', name: { value: 'SomethingElse' } },
+          { kind: 'OperationDefinition', name: { value: 'FakeDefinition' } },
+          { kind: 'SomethingElse', name: { value: 'SomethingElse' } }
+        ]
+      };
+
+      expect(Utils.getGQLDocumentName(fakeGQLDoc)).to.be.equal('FakeDefinition');
+    });
+    it('should throw an exception if wrong document', () => {
+      const fakeGQLDoc = {
+        definitions: [
+          { kind: 'SomethingElse', name: { value: 'SomethingElse' } },
+          { kind: 'OperationDefinition', name: { value: 'FakeDefinition' } },
+          { kind: 'SomethingElse', name: { value: 'SomethingElse' } }
+        ]
+      };
+
+      expect(Utils.getGQLDocumentName(fakeGQLDoc)).to.be.equal('FakeDefinition');
+    });
+  });
+
+  // defineProperties
+  describe('when I pass a source and destination objects', () => {
+    it('should define a new or modify existing properties directly on an object', () => {
+      const source = {
+        b: 11,
+        set theB(val) {
+          this.b = val;
+        },
+        get theB() {
+          return this.b;
+        },
+      };
+      const destination = {};
+
+      Utils.defineProperties(source, destination);
+      destination.theB = 123;
+
+      expect(destination.theB).to.be.equal(123);
+    });
+  });
+
+  // sleep
+  describe('when I pass number of seconds to wait', () => {
+    it('should run a function when seconds passed', async () => {
+      let test = false;
+
+      window.setTimeout(() => {
+        expect(test).to.be.equal(false);
+      }, 1500);
+      await Utils.sleep(1.5);
+      test = true;
+      expect(test).to.be.equal(true);
+    });
+  });
+});
+
+describe('Given VueGraphqlModels object', () => {
 });
