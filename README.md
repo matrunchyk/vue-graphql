@@ -58,6 +58,34 @@ Vue.use(VueGraphqlModels, {
 
 ## Documentation
 
+### Basic Usage
+
+```
+<template>
+   <ul>
+     <li v-if="model.loading">Loading...</li>
+     <li v-else-if="model.error">Loading Failed!</li>
+     <li v-else v-for="(item, index) in model.results.all()" :key="index">
+       {{ item.name }}
+     </li>
+  </ul>
+</template>
+
+<script>
+import Fruit from '@/models/Fruit';
+
+export default {
+  data: () => ({
+    model: new Fruit(),
+  }),
+
+  created() {
+    this.model.get();
+  },
+}
+</script>
+```
+
 #####Please see GitHub pages [documentation](https://digitalideastudio.github.io/vue-graphql-models/#/) for more details.=
 
 ## Contribution

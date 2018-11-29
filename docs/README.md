@@ -125,11 +125,14 @@ export default {
   },
   
   data: () => ({
-    fruits: Fruit.emptyCollection(),
+    fruit: Fruit.empty(),
     search: '',
   }),
   
   computed: {
+    fruits() {
+      return this.fruit.results;
+    },
     filteredFruits() {
       return this.search
         ? this.fruits.filter(
@@ -142,7 +145,7 @@ export default {
   },
   
   created() {
-    this.assets = await Fruit.get();
+    this.fruit.get();
   },
 };
 </script>
