@@ -117,15 +117,17 @@ function getGQLDocument(loader, path) {
   return loader(path)
     .catch(() => {
       if (isDebug()) {
-        l.debug(`No GQL found using path ${path}. Skipping.`);
+        l.warn(`No GQL found using path ${path}. Skipping.`);
       }
       return {
-        [docName]: {},
+        [docName]: {
+          __fake: true,
+        },
       };
     })
     .then(({ [docName]: doc }) => {
-      if (isDebug()) {
-        l.debug(`${path} has been imported successfully.`);
+      if (isDebug() && (doc.__fake === undefined)) {
+        l.info(`${path} has been imported successfully.`);
       }
       return doc;
     });
