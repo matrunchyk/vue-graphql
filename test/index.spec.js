@@ -126,7 +126,7 @@ describe('Given Utils object', () => {
       const loader = () => Promise.reject();
       const res = await Utils.getGQLDocument(loader, 'posts/queries/fetchPost');
 
-      expect(res).to.be.eql({});
+      expect(res).to.be.eql({__fake: true});
     });
   });
   describe('when I pass class name and arguments', () => {
