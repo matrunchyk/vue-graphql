@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import Exceptions from '../models/Exceptions';
 import pkg from '../../package';
+import InvalidArgumentException from '../models/Exceptions/InvalidArgumentException';
+import l from './Logger';
 
 /**
  * @module Utils
@@ -64,23 +66,6 @@ function lowerCaseFirst(str) {
   return str.charAt(0).toLowerCase() + str.slice(1);
 }
 
-function logger(arg1, arg2) {
-  if (arg2) {
-    return console.log(
-      '%cVGM',
-      'background: #DFC35E; color: white; padding: 2px 4px; border-radius: 3px; font-weight: bold;',
-      arg1,
-      arg2
-    );
-  }
-
-  return console.log(
-    '%cVGM',
-    'background: #DFC35E; color: white; padding: 2px 4px; border-radius: 3px; font-weight: bold;',
-    arg1
-  );
-}
-
 /**
  * Formats bytes to human readable string
  *
@@ -127,12 +112,12 @@ function getGQLDocument(loader, path) {
   const docName = segments[segments.length - 1];
 
   if (isDebug()) {
-    logger(`Passing loading process of ${path} to a loader....`);
+    l.debug(`Passing loading process of ${path} to a loader....`);
   }
   return loader(path)
     .catch(() => {
       if (isDebug()) {
-        logger(`No GQL found using path ${path}. Skipping.`);
+        l.debug(`No GQL found using path ${path}. Skipping.`);
       }
       return {
         [docName]: {},
@@ -140,7 +125,7 @@ function getGQLDocument(loader, path) {
     })
     .then(({ [docName]: doc }) => {
       if (isDebug()) {
-        logger(`${path} has been imported successfully.`);
+        l.debug(`${path} has been imported successfully.`);
       }
       return doc;
     });
@@ -155,7 +140,7 @@ function getGQLDocument(loader, path) {
  */
 function spawn(constructor, args = []) {
   if (isDebug()) {
-    logger(`Spawning a new instance of ${constructor.name}`);
+    l.debug(`Spawning a new instance of ${constructor.name}`);
   }
   function F() {
     return constructor.apply(this, args);
@@ -365,6 +350,50 @@ function pick(source = {}, selected = []) {
 }
 
 /**
+ * Picks selected items from the object
+ *
+ * @param source {Object} Source object
+ * @param selection {Array} Keys to select
+ * @returns {*|{}}
+ * @example
+ * pick({ a: 1, b: 2, c: 3}, ['a', 'c']) // Returns {a: 1, c: 3}
+ * pick({ a: 1, b: 2, c: 3}, ['a', 'd']) // Returns {a: 1}
+ * pick({ a: 1, b: 2, c: 3}, []) // Returns {}
+ * pick({ a: 1, b: 2, c: { d: 1} }, ['c']) // Returns { c: { d: 1 } }
+ * pick({ a: 1, b: 2, c: 3 }, {'z': 'b', 'a': 'a'}) // Returns { z: 2, a: 1 }
+ * pick({ a: 1, b: 2, c: 3 }, [{'z': 'b'}, 'a']) // Returns { z: 2, a: 1 }
+ */
+function pickModelVariables(source = {}, selection = []) {
+  let normalizedSelection = selection;
+
+  // If it's not an array (hopefully, it's an object)
+  if (!Array.isArray(selection) && typeof selection === 'object') {
+    normalizedSelection = Object.keys(selection).map((k) => ({ [k]: selection[k]}));
+  // If it's something else, than array or object, we won't deal with it
+  } else if (!Array.isArray(selection)) {
+    throw new InvalidArgumentException('Selection should be either array or object.');
+  }
+
+  return normalizedSelection.reduce((obj, variable) => {
+    let normalizedVariable = variable;
+    let normalizedKey = variable;
+
+    // If it's a map
+    if (typeof variable === 'object') {
+      const keys = Object.keys(variable);
+
+      if (keys.length !== 1) {
+        throw new InvalidArgumentException('Variable mapping should be a string or an object with a single key');
+      }
+      normalizedKey = keys[0];
+      normalizedVariable = variable[keys[0]];
+    }
+
+    return source[normalizedVariable] ? ({ ...obj, [normalizedKey]: source[normalizedVariable] }) : obj;
+  }, {});
+}
+
+/**
  * Returns a document name of GraphQL document
  *
  * @param document {Object} GQL Document
@@ -456,6 +485,7 @@ export {
   humanBytes,
   sortBy,
   pick,
+  pickModelVariables,
   defineProperties,
   getGQLDocumentName,
   httpPost,
@@ -467,5 +497,4 @@ export {
   stripTypename,
   findRecursive,
   findRouteMetas,
-  logger,
 };

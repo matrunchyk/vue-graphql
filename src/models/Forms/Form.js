@@ -1,6 +1,7 @@
 import Collection from '../Collection';
-import { logger, spawn } from '../../lib/utils';
+import { spawn } from '../../lib/utils';
 import Step from './Step';
+import l from '../../lib/Logger';
 
 export default class Form {
   steps = [];
@@ -13,7 +14,7 @@ export default class Form {
         this.steps = steps.map(option => new Step(option));
       })
       .catch((error) => {
-        logger(error);
+        l.error(error);
       });
   }
 
