@@ -144,11 +144,9 @@ function spawn(constructor, args = []) {
   if (isDebug()) {
     l.debug(`Spawning a new instance of ${constructor.name}`);
   }
-  function F() {
-    return constructor.apply(this, args);
-  }
-  F.prototype = constructor.prototype;
-  return new F();
+  // const F = class extends constructor {};
+  // return new F(...args);
+  return Reflect.construct(constructor, args);
 }
 
 /**
