@@ -507,6 +507,7 @@ class BaseModel {
     } catch (e) {
       this.setError(e);
       this.failed(e);
+      throw e;
     } finally {
       // Sets a loading flag off
       this.setLoading(false);
