@@ -516,10 +516,13 @@ class BaseModel {
     return this;
   }
 
-  async fetch(query, variables = {}) {
+  async fetchMany(query, variables = {}) {
+    return this.fetch(query, variables, true);
+  }
+
+  async fetch(query, variables = {}, wantsMany = false) {
     const { subscribeToMore } = this;
     const opName = getGQLDocumentName(query, this.className);
-    const wantsMany = variables._key === undefined;
 
     if (isDebug()) {
       l.debug('".fetch" method executed');
