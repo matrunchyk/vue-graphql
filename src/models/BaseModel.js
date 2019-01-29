@@ -242,7 +242,7 @@ class BaseModel {
       l.debug('".get" method executed');
     }
     await instance.loadDocuments();
-    return instance.fetch(instance.queryMany, variables);
+    return instance.fetchMany(instance.queryMany, variables);
   }
 
   /**
