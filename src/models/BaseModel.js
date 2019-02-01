@@ -53,6 +53,7 @@ class BaseModel {
   initialState = {};
   isDirty = false;
   uncountables = [];
+  propagateChanges = true;
 
   /**
    * @deprecated use saveVariables or updateVariables instead
@@ -855,7 +856,9 @@ class BaseModel {
     if (isDebug()) {
       l.info('Updated hook fired');
     }
-    defineProperties(this, props);
+    if (this.propagateChanges) {
+      defineProperties(this, props);
+    }
     this.updated(store, props);
   }
 
