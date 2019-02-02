@@ -449,11 +449,11 @@ class BaseModel {
         return filtered.sortBy(this.defaultSortBy).map(i => this.hydrate(i));
       }
 
-      Object.assign(result, {
-        _result: result,
-      });
-
-      return this.hydrate(cloneDeep(result));
+      return this.hydrate(
+        Object.assign(cloneDeep(result), {
+          _result: result,
+        })
+      );
     } catch (e) {
       this.setError(e);
       this.failed(e);
