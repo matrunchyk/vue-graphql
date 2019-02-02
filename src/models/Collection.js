@@ -1,5 +1,4 @@
 import collect from 'collect.js';
-import { sortBy } from '../lib/utils';
 
 class Collection {
   collection = [];
@@ -24,10 +23,6 @@ class Collection {
     }
 
     return undefined;
-  }
-
-  sortExtendedBy(sortOpts = {}) {
-    return collect(sortBy(this.collection.all(), sortOpts));
   }
 }
 

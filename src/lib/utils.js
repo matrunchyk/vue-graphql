@@ -2,7 +2,6 @@ import Vue from 'vue';
 import Exceptions from '../models/Exceptions';
 import pkg from '../../package';
 import InvalidArgumentException from '../models/Exceptions/InvalidArgumentException';
-import l from './Logger';
 
 /**
  * @module Utils
@@ -111,14 +110,8 @@ function getGQLDocument(loader, path) {
   const segments = path.split('/');
   const docName = segments[segments.length - 1];
 
-  if (isDebug()) {
-    l.debug(`Passing loading process of ${path} to a loader....`);
-  }
   return loader(path)
     .catch(() => {
-      if (isDebug()) {
-        l.warn(`No GQL found using path ${path}. Skipping.`);
-      }
       return {
         [docName]: {
           __fake: true,
@@ -126,9 +119,6 @@ function getGQLDocument(loader, path) {
       };
     })
     .then(({ [docName]: doc }) => {
-      if (isDebug() && (doc.__fake === undefined)) {
-        l.info(`${path} has been imported successfully.`);
-      }
       return doc;
     });
 }
@@ -141,9 +131,6 @@ function getGQLDocument(loader, path) {
  * @returns {F} An instance of the class
  */
 function spawn(constructor, args = []) {
-  if (isDebug()) {
-    l.debug(`Spawning a new instance of ${constructor.name}`);
-  }
   // const F = class extends constructor {};
   // return new F(...args);
   return Reflect.construct(constructor, args);

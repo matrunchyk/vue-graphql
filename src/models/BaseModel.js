@@ -1,24 +1,18 @@
 import Vue from 'vue';
-import moment from 'moment';
 import to from 'to-case';
 import * as pluralize from 'pluralize';
 import {
   spawn,
-  pick,
   getGQLDocumentName,
   getGQLDocument,
   defineProperties,
   cloneDeep,
-  version,
-  isDebug,
   pickModelVariables,
 } from '../lib/utils';
-import l from '../lib/Logger';
-import Collection from './Collection';
-import Form from './Forms/Form';
 import ConfigurationException from './Exceptions/ConfigurationException';
 import BaseException from './Exceptions/BaseException';
 import ServerErrorException from './Exceptions/ServerResponseException';
+import Collection from './Collection';
 
 const gqlCache = {};
 
@@ -46,21 +40,12 @@ class BaseModel {
   primaryKey = '_key';
   inputDataKey = 'data';
   documentsLoaded = false;
-  pForm = null;
-  formOptions = null;
   vue = {};
   casts = {};
   initialState = {};
   isDirty = false;
   uncountables = [];
   propagateChanges = true;
-
-  /**
-   * @deprecated use saveVariables or updateVariables instead
-   * @type {Array}
-   */
-  inputFields = [];
-
   saveVariables = [];
   updateVariables = [];
 
@@ -73,6 +58,7 @@ class BaseModel {
     if (Vue.prototype.$vgmOptions) {
       this.$vgmOptions = Vue.prototype.$vgmOptions;
     }
+
     this.vue = Object.getPrototypeOf(this).vue;
 
     if (params && params.boot === false) {
@@ -82,15 +68,6 @@ class BaseModel {
     this.boot(params);
   }
 
-  // Static getters
-  /**
-   * Returns library version
-   *
-   * @returns {string}
-   */
-  static get version() {
-    return version();
-  }
   /**
    * Returns static class name
    *
@@ -109,34 +86,6 @@ class BaseModel {
    */
   get defaults() {
     return {};
-  }
-
-  /**
-   * Returns a formatted (from-now) create date
-   *
-   * @returns {string}
-   */
-  get createdAtFormatted() {
-    return moment(this.createdAt).fromNow();
-  }
-
-  /**
-   * Returns a timestamped date
-   *
-   * @returns {Number}
-   */
-  get createdAtTimestamp() {
-    return moment(this.createdAt).valueOf();
-  }
-
-  /**
-   * Returns variables being sent as input data
-   *
-   * @deprecated Use getCreateVariables(), getUpdateVariables() method instead
-   * @returns {*|{}}
-   */
-  get inputFieldsVariables() {
-    return pick(this, this.inputFields);
   }
 
   /**
@@ -202,19 +151,6 @@ class BaseModel {
   }
 
   /**
-   * Return Forms object
-   *
-   * @returns {Form}
-   */
-  get form() {
-    if (!this.pForm) {
-      this.pForm = new Form(this);
-    }
-    return this.pForm;
-  }
-
-  // Static methods
-  /**
    * Finds a single model item
    *
    * @param variables
@@ -223,9 +159,6 @@ class BaseModel {
   static async find(variables = {}) {
     const instance = this.empty(false);
 
-    if (isDebug()) {
-      l.debug('".find" method executed');
-    }
     await instance.loadDocuments();
     return instance.fetch(instance.query, variables);
   }
@@ -239,9 +172,6 @@ class BaseModel {
   static async get(variables = {}) {
     const instance = this.empty(false);
 
-    if (isDebug()) {
-      l.debug('".get" method executed');
-    }
     await instance.loadDocuments();
     return instance.fetchMany(instance.queryMany, variables);
   }
@@ -253,9 +183,6 @@ class BaseModel {
    * @returns {Collection}
    */
   static emptyCollection() {
-    if (isDebug()) {
-      l.debug('Spawning an empty collection...');
-    }
     return new Collection();
   }
 
@@ -266,9 +193,6 @@ class BaseModel {
    * @returns {BaseModel}
    */
   static empty(boot = true) {
-    if (isDebug()) {
-      l.debug('Spawning an empty model...');
-    }
     // noinspection JSValidateTypes
     return spawn(this, [{ boot }]);
   }
@@ -328,9 +252,6 @@ class BaseModel {
    * Processes casts
    */
   processCasts(params) {
-    if (isDebug()) {
-      l.debug('Processing casts...');
-    }
     const casted = Object.assign({}, params);
 
     Object.keys(casted).forEach((key) => {
@@ -370,9 +291,6 @@ class BaseModel {
    * @returns {Promise<{BaseModel[]}>}
    */
   async find(variables = {}) {
-    if (isDebug()) {
-      l.debug('".get" method executed');
-    }
     await this.loadDocuments();
     return this.fetch(this.query, variables);
   }
@@ -384,9 +302,6 @@ class BaseModel {
    * @returns {Promise<{BaseModel[]}>}
    */
   async get(variables = {}) {
-    if (isDebug()) {
-      l.debug('".get" method executed');
-    }
     await this.loadDocuments();
     return this.fetch(this.queryMany, variables);
   }
@@ -398,13 +313,8 @@ class BaseModel {
    */
   async update() {
     const prepared = {
-      ...this.prepareFieldsVariables(),
       ...this.prepareVariables(this.updateVariables),
     };
-
-    if (isDebug()) {
-      l.debug('".update" method executed');
-    }
 
     await this.loadDocuments();
     return this.save(this.mutationUpdate, {
@@ -420,13 +330,9 @@ class BaseModel {
    */
   async create() {
     const prepared = {
-      ...this.prepareFieldsVariables(),
       ...this.prepareVariables(this.getCreateVariables)
     };
 
-    if (isDebug()) {
-      l.debug('".create" method executed');
-    }
     await this.loadDocuments();
     return this.save(this.mutationCreate, {
       [this.inputDataKey]: prepared,
@@ -439,10 +345,6 @@ class BaseModel {
    * @returns {Promise<*>}
    */
   async delete() {
-    if (isDebug()) {
-      l.debug('".delete" method executed');
-    }
-
     await this.loadDocuments();
     return this.save(this.mutationDelete, {
       [this.primaryKey]: this[this.primaryKey],
@@ -457,9 +359,6 @@ class BaseModel {
    * @returns {Promise<BaseModel>}
    */
   async save(mutation, variables = {}) {
-    if (isDebug()) {
-      l.debug('".save" method executed');
-    }
     if (typeof this.vue !== 'object') {
       throw new ConfigurationException(`Vue instance must be VueComponent.
       Make sure that BaseModel.vue contains your local vue instance.`);
@@ -483,9 +382,6 @@ class BaseModel {
       /**
        * Perform a mutation
        */
-      if (isDebug()) {
-        l.debug('Save: Performing Apollo mutation...');
-      }
       await this.vue.$apollo.mutate({
         mutation,
         variables,
@@ -502,9 +398,6 @@ class BaseModel {
         }, data[opName]),
       });
 
-      if (isDebug()) {
-        l.success('Save: Apollo mutation status: OK');
-      }
     } catch (e) {
       this.setError(e);
       this.failed(e);
@@ -525,10 +418,6 @@ class BaseModel {
     const { subscribeToMore } = this;
     const opName = getGQLDocumentName(query, this.className);
 
-    if (isDebug()) {
-      l.debug('".fetch" method executed');
-    }
-
     // Clears an error
     this.setError();
 
@@ -545,9 +434,6 @@ class BaseModel {
         subscribeToMore,
       });
 
-      if (isDebug()) {
-        l.success('Fetch: Apollo mutation status: OK');
-      }
       this._result = result;
 
       if (!wantsMany && Array.isArray(result)) {
@@ -561,25 +447,19 @@ class BaseModel {
       if (wantsMany || Array.isArray(result)) {
         const resCol = new Collection(result);
         const filtered = resCol.filter(s => s);
-        const sorted = filtered.sortBy(this.defaultSortBy);
 
-        if (isDebug()) {
-          l.debug('Fetch: hydrating a collection');
-        }
-        return sorted.map(i => this.hydrate(i));
+        return filtered.sortBy(this.defaultSortBy).map(i => this.hydrate(i));
       }
 
-      if (isDebug()) {
-        l.debug('Fetch: hydrating a single model');
-      }
       return this.hydrate(cloneDeep(result));
     } catch (e) {
       this.setError(e);
       this.failed(e);
+
       if (e instanceof BaseException) {
         throw e;
       }
-      l.error(e.message);
+
       return wantsMany ?
         new Collection([]) :
         this.hydrate({});
@@ -605,6 +485,7 @@ class BaseModel {
       if (!normalizedSub || !normalizedSub.document) {
         return;
       }
+
       const opSubName = getGQLDocumentName(normalizedSub.document, this.className);
 
       const subscription = Object.assign({
@@ -621,17 +502,15 @@ class BaseModel {
 
       subscribeToMore.push(subscription);
     });
+
     return subscribeToMore;
   }
 
   async attach(models) {
     const m = Array.isArray(models) ? models : [models];
 
-    if (isDebug()) {
-      l.debug('".attach" method executed');
-    }
-
     await this.loadDocuments();
+
     return this.save(this.mutationAttach, {
       [this.primaryKey]: this[this.primaryKey],
       [this.inputDataKey]: m.map(m => m[m.primaryKey]),
@@ -641,11 +520,8 @@ class BaseModel {
   async detach(models) {
     const m = Array.isArray(models) ? models : [models];
 
-    if (isDebug()) {
-      l.debug('".detach" method executed');
-    }
-
     await this.loadDocuments();
+
     return this.save(this.mutationDetach, {
       [this.primaryKey]: this[this.primaryKey],
       [this.inputDataKey]: m.map(m => m[m.primaryKey]),
@@ -671,23 +547,11 @@ class BaseModel {
     if (age) {
       const diffSeconds = (new Date() - new Date(age)) / 1000;
 
-      if (isDebug()) {
-        l.info(`Cache age: ${diffSeconds} seconds`);
-      }
-
       if (diffSeconds >= ((this.$vgmOptions || {}).cacheLife || 60)) {
-        if (isDebug()) {
-          l.debug('Purging cache...');
-        }
         this.refreshCacheAge();
 
         if (this.$vgmOptions && this.$vgmOptions.cachePersistor) {
           await this.$vgmOptions.cachePersistor.purge();
-        } else {
-          l.warn(`In order to gain better loading speed & caching support,
-            use "cachePersistor" config key which should be an instance of CachePersistor class
-            of "apollo-cache-persist" package.
-            Details: `);
         }
       }
     } else {
@@ -698,15 +562,10 @@ class BaseModel {
   init() {}
 
   async loadDocuments() {
-    if (isDebug()) {
-      l.debug('Loading documents...');
-    }
     if (this.documentsLoaded) {
-      if (isDebug()) {
-        l.debug('Documents already have loaded, exiting.');
-      }
       return Promise.resolve();
     }
+
     return new Promise(async (resolve, reject) => {
       const entityNamePlural = pluralize(this.className);
       const gqlSrc = to.camel(entityNamePlural);
@@ -736,44 +595,19 @@ class BaseModel {
    * @returns {Promise<void>}
    */
   async getCachedGql(propName, path) {
-    if (isDebug()) {
-      l.debug(`Inititated retrieval of ${path} from a cache...`);
-    }
     if (this[propName] === false) {
-      if (isDebug()) {
-        l.debug(`"${propName}" is set to 'false', skipping.`);
-      }
       return;
     }
     if ((!this[propName] || !this[propName].definitions)) {
-      if (isDebug()) {
-        l.debug(`"${propName}" was not set, proceeding to an autoloading...`);
-      }
       if (!gqlCache[path]) {
-        if (isDebug()) {
-          l.debug(`No cache found for ${path}, proceeding to a loader...`);
-        }
         gqlCache[path] = await getGQLDocument(
           this.gqlLoader,
           path
         );
       }
 
-      if (isDebug()) {
-        l.debug(`Caching "${propName}" for ${path}`);
-      }
       this[propName] = gqlCache[path];
     }
-  }
-
-  /**
-   * Prepares inputFieldsVariables for sending to the backend.
-   * Values must be either String (ID) or Array of Strings (IDs)
-   *
-   * @deprecated Use prepareVariables, prepareUpdateVariables(), prepareSaveVariables() instead
-   */
-  prepareFieldsVariables() {
-    return this.prepareVariables(this.inputFieldsVariables);
   }
 
   prepareVariables(selection) {
@@ -786,6 +620,7 @@ class BaseModel {
         let collection = selection[key].all();
 
         collection = collection.filter(item => item);
+
         if (Array.isArray(collection) && collection.length) {
           const obj = collection[0];
 
@@ -794,6 +629,7 @@ class BaseModel {
             collection = collection.map(ob => ob._id);
           }
         }
+
         Object.assign(prepared, { [key]: collection });
 
         // if value is Object extended BaseModel
@@ -813,6 +649,7 @@ class BaseModel {
             arrayOfvalues = arrayOfvalues.map(ob => ob._id);
           }
         }
+
         Object.assign(prepared, { [key]: arrayOfvalues });
 
         // if value is Object
@@ -853,13 +690,10 @@ class BaseModel {
     queryName,
     variables,
   }, props) {
-    if (isDebug()) {
-      l.info('Updated hook fired');
-    }
+
     if (this.propagateChanges) {
       defineProperties(this, props);
     }
-    this.updated(store, props);
   }
 
   /**
@@ -873,17 +707,7 @@ class BaseModel {
    */
   failed(e) {
     this._result = null;
-    if (isDebug()) {
-      l.error('Operation failed: ', e.message);
-    }
   }
-
-  /**
-   * @deprecated Please use '.saved' hook instead
-   * @param store
-   * @param props
-   */
-  updated(store, props) {}
 }
 
 export default BaseModel;

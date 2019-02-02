@@ -54,14 +54,14 @@ const config = {
         uglifyOptions: {
           mangle: {
             // eslint-disable-next-line camelcase
-            keep_fnames: true,
+            keep_fnames: false,
           },
           output: {
             comments: /^\**!|@preserve|@license|@cc_on/
           },
           compress: {
             // eslint-disable-next-line camelcase
-            keep_fnames: true,
+            keep_fnames: false,
           },
         },
       }),
@@ -79,7 +79,7 @@ const config = {
   },
   externals: {
     vue: 'vue',
-    moment: 'moment'
+    'collect.js': 'collect.js'
   }
 };
 
