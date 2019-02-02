@@ -79,7 +79,6 @@ const config = {
   },
   externals: {
     vue: 'vue',
-    'collect.js': 'collect.js'
   }
 };
 
