@@ -23,7 +23,6 @@ class BaseModel {
   __typename = 'BaseModel';
   _key = '';
   _result = null;
-  _originalResult = null;
   mutationCreate = {};
   mutationUpdate = {};
   mutationDelete = {};
@@ -145,14 +144,8 @@ class BaseModel {
     if (Array.isArray(this._result)) {
       return new Collection(this._result);
     }
-    if (this._result instanceof Collection) {
-      return this._result;
-    }
-    return new Collection();
-  }
 
-  get originalResult() {
-    return this._originalResult;
+    return this._result;
   }
 
   /**
@@ -695,8 +688,6 @@ class BaseModel {
     queryName,
     variables,
   }, props) {
-
-    this._originalResult = props;
 
     if (this.propagateChanges) {
       defineProperties(this, props);
