@@ -310,7 +310,7 @@ class BaseModel {
    */
   async update() {
     const prepared = {
-      ...this.prepareVariables(this.updateVariables),
+      ...this.prepareVariables(this.getUpdateVariables),
     };
     const variables = this.flattenVariables ?
       prepared :
