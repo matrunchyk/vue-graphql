@@ -13,6 +13,7 @@ import ConfigurationException from './Exceptions/ConfigurationException';
 import BaseException from './Exceptions/BaseException';
 import ServerErrorException from './Exceptions/ServerResponseException';
 import Collection from './Collection';
+import InvalidArgumentException from './Exceptions/InvalidArgumentException';
 
 const gqlCache = {};
 
@@ -21,8 +22,7 @@ const gqlCache = {};
  */
 class BaseModel {
   __typename = 'BaseModel';
-  _key = '';
-  _result = null;
+  _documentsLoaded = false;
   mutationCreate = {};
   mutationUpdate = {};
   mutationDelete = {};
@@ -35,11 +35,9 @@ class BaseModel {
   loading = false;
   error = null;
   defaultSortBy = 'uuid';
-  primaryKey = '_key';
-  inputDataKey = 'data';
-  documentsLoaded = false;
+  primaryKey = 'uuid';
+  dataKey = '';
   vue = {};
-  casts = {};
   initialState = {};
   isDirty = false;
   uncountables = [];
@@ -47,6 +45,7 @@ class BaseModel {
   saveVariables = [];
   updateVariables = [];
   flattenVariables = false;
+  attributes = {};
 
   /**
    * Class constructor
@@ -139,12 +138,8 @@ class BaseModel {
     return this.createRoute('', true);
   }
 
-  get result() {
-    if (Array.isArray(this._result)) {
-      return new Collection(this._result);
-    }
-
-    return this._result;
+  get inputDataKey() {
+    return this.dataKey || to.camel(this.className);
   }
 
   /**
@@ -204,14 +199,11 @@ class BaseModel {
     this.uncountables.forEach(rule => pluralize.addUncountableRule(rule));
     this.setDefaultTypename();
 
-    Object.assign(this, this.defaults);
-    const processedParams = this.processCasts(params);
+    Object.assign(this.initialState, params);
+    Object.assign(this, this.defaults, params);
 
-    Object.assign(this, processedParams);
-    // TODO: Probably needs to be async to free up the event loop
-    // TODO: so the instance could be built w/o delays
+    this.processAttributes();
     this.init();
-    Object.assign(this.initialState, processedParams);
   }
 
   /**
@@ -246,19 +238,34 @@ class BaseModel {
   }
 
   /**
-   * Processes casts
+   * Processes attributes
    */
-  processCasts(params) {
-    const casted = Object.assign({}, params);
+  processAttributes() {
+    Object.keys(this.attributes).forEach((attrName) => {
+      const origName = `_${attrName}`;
+      const AttrValue = this.attributes[attrName];
+      const origAttrValue = this[attrName];
 
-    Object.keys(casted).forEach((key) => {
-      if (!this.casts[key]) {
+      if (!AttrValue) {
         return;
       }
-      casted[key] = (new this.casts[key](casted[key])).valueOf();
-    });
 
-    return casted;
+      // Backup original
+      Object.defineProperty(this, origName, {
+        value: AttrValue,
+        writable: false
+      });
+
+      // Casting
+      if (Array.isArray(AttrValue)) {
+        if (!Array.isArray(origAttrValue)) {
+          throw new InvalidArgumentException(`Attribute "${attrName}" has type Array, but class property doesn't.`);
+        }
+        this[attrName] = origAttrValue.map(el => (new AttrValue(el)).valueOf());
+      } else {
+        this[attrName] = (new AttrValue(origAttrValue)).valueOf();
+      }
+    });
   }
 
   /**
@@ -268,6 +275,7 @@ class BaseModel {
   revert() {
     const state = Object.assign(this, this.defaults, this.initialState);
 
+    this.processAttributes(this.initialState);
     this.isDirty = false;
     return state;
   }
@@ -436,8 +444,6 @@ class BaseModel {
         subscribeToMore,
       });
 
-      this._result = result;
-
       if (!wantsMany && Array.isArray(result)) {
         throw new ServerErrorException('Was expected an object but received an array.');
       }
@@ -453,11 +459,7 @@ class BaseModel {
         return filtered.sortBy(this.defaultSortBy).map(i => this.hydrate(i));
       }
 
-      return this.hydrate(
-        Object.assign(cloneDeep(result), {
-          _result: result,
-        })
-      );
+      return this.hydrate(cloneDeep(result));
     } catch (e) {
       this.setError(e);
       this.failed(e);
@@ -568,7 +570,7 @@ class BaseModel {
   init() {}
 
   async loadDocuments() {
-    if (this.documentsLoaded) {
+    if (this._documentsLoaded) {
       return Promise.resolve();
     }
 
@@ -585,7 +587,7 @@ class BaseModel {
         await this.getCachedGql('mutationAttach', `${gqlSrc}/mutations/attach${this.className}`);
         await this.getCachedGql('mutationDetach', `${gqlSrc}/mutations/detach${this.className}`);
 
-        this.documentsLoaded = true;
+        this._documentsLoaded = true;
         resolve();
       } catch (e) {
         reject(e);
@@ -711,9 +713,7 @@ class BaseModel {
    * Triggers when error on error
    * @param e
    */
-  failed(e) {
-    this._result = null;
-  }
+  failed(e) {}
 }
 
 export default BaseModel;
