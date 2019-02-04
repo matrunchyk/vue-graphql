@@ -5,19 +5,18 @@ Influenced by Laravel Eloquent Models & Collections.
 
 
 [![npm](https://img.shields.io/npm/v/vue-graphql-models.svg)](https://www.npmjs.com/package/vue-graphql-models) [![GitHub stars](https://img.shields.io/github/stars/digitalideastudio/vue-graphql-models.svg)](https://github.com/digitalideastudio/vue-graphql-models/stargazers)
- ![Travis](https://api.travis-ci.org/digitalideastudio/vue-graphql-models.svg?branch=master) [![codecov](https://codecov.io/gh/digitalideastudio/vue-graphql-models/branch/master/graph/badge.svg)](https://codecov.io/gh/digitalideastudio/vue-graphql-models) [![GitHub license](https://img.shields.io/github/license/digitalideastudio/vue-graphql-models.svg)](https://github.com/digitalideastudio/vue-graphql-models/blob/master/LICENSE) 
+![Travis](https://api.travis-ci.org/digitalideastudio/vue-graphql-models.svg?branch=master) [![codecov](https://codecov.io/gh/digitalideastudio/vue-graphql-models/branch/master/graph/badge.svg)](https://codecov.io/gh/digitalideastudio/vue-graphql-models) [![GitHub license](https://img.shields.io/github/license/digitalideastudio/vue-graphql-models.svg)](https://github.com/digitalideastudio/vue-graphql-models/blob/master/LICENSE) 
 
+_Note. If you looking for v1 of this library, switch to a [relevant branch](https://github.com/digitalideastudio/vue-graphql-models/tree/v1)._ 
 
 
 ## Features
 
-* `BaseModel` is a class which acts as a base entity for your future models extending this class.
-* Full encapsulation of GraphQL queries & mutations. No need to call them manually, all you need is to call you Model's `.get()` or `.find()` methods.
+* `BaseModel` is a class which acts as a base entity for your models extending this class.
+* Full encapsulation of GraphQL queries & mutations. No need to call them manually, all you need is to call you Model's methods.
 * All arrays retrieved from GraphQL will be hydrated with respectful collections of models.
 * Supports lazy-loading of GraphQL documents.
-* Supports evens & hooks for customization.
-* Has built-in FormWizard factory so you can create simple or complex Forms.
-* Has built-in support for your application's menus in OOP manner. 
+* Supports events & hooks for customization.
 
 ###### Internally:  
 * Webpack 4 based.
@@ -38,27 +37,25 @@ or
 
 ```
 import VueGraphqlModels from 'vue-graphql-models';
-// import createProvider, { cachePersistor } from 'Lib/vue-apollo';
 
-Vue.use(VueGraphqlModels, {
-  // debug: true,
-  // cachePersistor,
-  cacheLife: 60,
-  dataLoader(path) {
-    return import(/* webpackChunkName: "data/[request]" */ `Data/${path}`);
-  },
-  modelLoader(path) {
-    return import(/* webpackChunkName: "models/[request]" */ `Models/${path}`);
-  },
-  gqlLoader(path) {
-    return import(/* webpackChunkName: "gql/[request]" */ `Gql/${path}.graphql`);
-  },
-});
+Vue.use(VueGraphqlModels);
 ```
 
 ## Documentation
 
 ### Basic Usage
+#### 1. Define your model:
+
+```
+import { BaseModel } from 'vue-graphql-models';
+
+export default class Fruit extends BaseModel {
+ // Your additional logic, if needed
+ //   ...or just empty class
+}
+```
+
+#### 2. Use it in your component:
 
 ```
 <template>
@@ -66,7 +63,8 @@ Vue.use(VueGraphqlModels, {
      <li v-if="model.loading">Loading...</li>
      <li v-else-if="model.error">Loading Failed!</li>
      <li v-else v-for="(item, index) in model.results.all()" :key="index">
-       {{ item.name }}
+       <p>Name: {{ item.name }}</p>
+       <p>Color: {{ item.color }}</p>
      </li>
   </ul>
 </template>
@@ -86,23 +84,17 @@ export default {
 </script>
 ```
 
-#####Please see GitHub pages [documentation](https://digitalideastudio.github.io/vue-graphql-models/#/) for more details.=
+####[Full Documentation](https://digitalideastudio.github.io/vue-graphql-models/#/)
 
 ## Contribution
 
 Feel free to submit your pull-requests, ideas, proposals and bug reports!
  
 ### TODOs:
-- ~~Add CodeSandbox example~~
-- ~~Add Launchpad example for lazy folks~~
-- ~~Create github.io pages with a whole documentation & examples~~
-- ~~Add relationship support between models (e.g attach/detach)~~
-- ~~Add even more speed & optimization & caching~~
+- Add dynamic query/mutation building based on model attributes w/o need to create `.graphql` files at all
+- Make collections optional to make library more lightweight 
 - Rewrite to TypeScript
 - Add subscriptions & events example
-- Add menu event hooks example
 - Write more tests & coverage support
 - Add model versioning support
-- ~~Add validation of dynamic fields~~
-- Create MenuDrawer component
 - Add a configurable operation confirmation when performing some risky operations. For example, automatically display a delete confirmation component when executing `.delete()` method.
