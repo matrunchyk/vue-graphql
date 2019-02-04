@@ -376,7 +376,7 @@ function pickModelVariables(source = {}, selection = []) {
       normalizedVariable = variable[keys[0]];
     }
 
-    return source[normalizedVariable] ? ({ ...obj, [normalizedKey]: source[normalizedVariable] }) : obj;
+    return source[normalizedVariable] !== undefined ? ({ ...obj, [normalizedKey]: source[normalizedVariable] }) : obj;
   }, {});
 }
 
