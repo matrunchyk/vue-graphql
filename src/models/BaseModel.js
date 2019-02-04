@@ -32,11 +32,9 @@ class BaseModel {
   queryMany = {};
   subscriptions = [];
   subscriptionsMany = [];
-  createdAt = new Date();
-  createdBy = {};
   loading = false;
   error = null;
-  defaultSortBy = 'createdBy';
+  defaultSortBy = 'uuid';
   primaryKey = '_key';
   inputDataKey = 'data';
   documentsLoaded = false;
@@ -48,6 +46,7 @@ class BaseModel {
   propagateChanges = true;
   saveVariables = [];
   updateVariables = [];
+  flattenVariables = false;
 
   /**
    * Class constructor
@@ -313,12 +312,14 @@ class BaseModel {
     const prepared = {
       ...this.prepareVariables(this.updateVariables),
     };
+    const variables = this.flattenVariables ?
+      prepared :
+      {
+        [this.inputDataKey]: prepared,
+      };
 
     await this.loadDocuments();
-    return this.save(this.mutationUpdate, {
-      [this.primaryKey]: this[this.primaryKey],
-      [this.inputDataKey]: prepared,
-    });
+    return this.save(this.mutationUpdate, variables);
   }
 
   /**
@@ -330,11 +331,14 @@ class BaseModel {
     const prepared = {
       ...this.prepareVariables(this.getCreateVariables)
     };
+    const variables = this.flattenVariables ?
+      prepared :
+      {
+        [this.inputDataKey]: prepared,
+      };
 
     await this.loadDocuments();
-    return this.save(this.mutationCreate, {
-      [this.inputDataKey]: prepared,
-    });
+    return this.save(this.mutationCreate, variables);
   }
 
   /**
