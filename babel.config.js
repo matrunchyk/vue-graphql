@@ -1,6 +1,4 @@
-const envPreset = ['@babel/env', {
-  'targets': { node: 'current' }
-}];
+const envPreset = ['@babel/env'];
 
 if (process.env.NODE_ENV === 'test') {
   // noinspection JSCheckFunctionSignatures
