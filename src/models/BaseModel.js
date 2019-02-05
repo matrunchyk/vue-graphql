@@ -10,7 +10,6 @@ import {
   pickModelVariables,
 } from '../lib/utils';
 import ConfigurationException from './Exceptions/ConfigurationException';
-import BaseException from './Exceptions/BaseException';
 import ServerErrorException from './Exceptions/ServerResponseException';
 import Collection from './Collection';
 import InvalidArgumentException from './Exceptions/InvalidArgumentException';
@@ -206,8 +205,6 @@ class BaseModel {
 
     Object.assign(this.initialState, params);
     Object.assign(this, this.defaults, params);
-
-    this.processAttributes();
     this.init();
   }
 
@@ -471,14 +468,7 @@ class BaseModel {
     } catch (e) {
       this.setError(e);
       this.failed(e);
-
-      if (e instanceof BaseException) {
-        throw e;
-      }
-
-      return wantsMany ?
-        new Collection([]) :
-        this.hydrate({});
+      throw e;
     } finally {
       this.setLoading(false);
       this.finished();
@@ -681,7 +671,10 @@ class BaseModel {
   }
 
   hydrate(item) {
-    return new this.constructor(item);
+    const hydrated = new this.constructor(item);
+
+    hydrated.processAttributes();
+    return hydrated;
   }
 
   ifTypeName(type) {
