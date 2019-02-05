@@ -4,7 +4,6 @@ const webpack = require('webpack');
 const path = require('path');
 const env = require('yargs').argv.env; // use --env with webpack 2
 const pkg = require('./package.json');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 let libraryName = pkg.name;
 let libraryVersion = pkg.version;
@@ -49,23 +48,6 @@ const config = {
   },
   optimization: {
     minimize: mode === 'production',
-    minimizer: [
-      new UglifyJSPlugin({
-        uglifyOptions: {
-          mangle: {
-            // eslint-disable-next-line camelcase
-            keep_fnames: false,
-          },
-          output: {
-            comments: /^\**!|@preserve|@license|@cc_on/
-          },
-          compress: {
-            // eslint-disable-next-line camelcase
-            keep_fnames: false,
-          },
-        },
-      }),
-    ],
   },
   plugins: [
     new webpack.DefinePlugin({

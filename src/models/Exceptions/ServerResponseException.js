@@ -1,3 +1,3 @@
-import BaseException from './BaseException';
+// import BaseException from './BaseException';
 
-export default class ServerErrorException extends BaseException {}
+export default class ServerErrorException extends Error {}

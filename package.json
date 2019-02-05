@@ -1,6 +1,6 @@
 {
   "name": "vue-graphql-models",
-  "version": "2.3.5",
+  "version": "2.4.0",
   "description": "Universal library which helps to build OOP-driven GraphQL based models for Vue components. Influenced by Laravel Eloquent Models & Collections.",
   "main": "lib/vue-graphql-models.js",
   "repository": {
@@ -40,6 +40,7 @@
     "babel-loader": "^8.0.0",
     "babel-plugin-add-module-exports": "^1.0.0",
     "babel-plugin-transform-runtime": "^6.23.0",
+    "babili-webpack-plugin": "^0.1.2",
     "bundlesize": "^0.17.0",
     "chai": "^4.2.0",
     "chai-fetch-mock": "^2.0.0",

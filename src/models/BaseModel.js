@@ -46,7 +46,6 @@ class BaseModel {
   saveVariables = [];
   updateVariables = [];
   flattenVariables = false;
-  attributes = {};
 
   /**
    * Class constructor
