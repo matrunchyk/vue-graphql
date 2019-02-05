@@ -1,9 +1,9 @@
-// import BaseException from './BaseException';
+import BaseException from './BaseException';
 import InvalidArgumentException from './InvalidArgumentException';
 import ConfigurationException from './ConfigurationException';
 
 export default {
-  // BaseException,
+  BaseException,
   InvalidArgumentException,
   ConfigurationException
 };

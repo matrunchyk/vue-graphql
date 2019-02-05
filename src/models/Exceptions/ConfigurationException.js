@@ -1,3 +1,3 @@
-// import BaseException from './BaseException';
+import BaseException from './BaseException';
 
-export default class ConfigurationException extends Error {}
+export default class ConfigurationException extends BaseException {}

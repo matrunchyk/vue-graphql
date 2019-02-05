@@ -1,3 +1,3 @@
-// import BaseException from './BaseException';
+import BaseException from './BaseException';
 
-export default class InvalidArgumentException {}
+export default class InvalidArgumentException extends BaseException {}
