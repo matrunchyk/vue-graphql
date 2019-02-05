@@ -244,35 +244,51 @@ class BaseModel {
    */
   processAttributes() {
     Object.keys(this.attributes).forEach((attrName) => {
-      const origName = `_${attrName}`;
-      const AttrValue = this.attributes[attrName];
-      const origAttrValue = this[attrName];
+      const Factory = this.attributes[attrName];
+      const value = this[attrName];
 
-      if (!AttrValue) {
+      if (!Factory) {
         return;
       }
 
       // Backup original
-      Object.defineProperty(this, origName, {
-        value: AttrValue,
+      Object.defineProperty(this, `_${attrName}`, {
+        value,
         writable: false
       });
 
       // Casting
-      if (Array.isArray(AttrValue)) {
-        if (!Array.isArray(origAttrValue)) {
+      if (Array.isArray(Factory)) {
+        if (!Array.isArray(value)) {
           throw new InvalidArgumentException(`Attribute "${attrName}" has type Array, but class property doesn't.`);
         }
-        this[attrName] = origAttrValue.map(el => this.processAttribute(AttrValue, el));
+        this[attrName] = value.map(el => this.processAttribute(Factory[0], el));
       } else {
-        this[attrName] = this.processAttribute(AttrValue, origAttrValue);
+        this[attrName] = this.processAttribute(Factory, value);
       }
     });
   }
 
   // noinspection JSMethodCanBeStatic
   processAttribute(Factory, value) {
-    return (new Factory(value)).valueOf();
+    let ResolvedFactory = Factory;
+    let decorator = 'valueOf';
+    let construct = true;
+
+    if (typeof Factory === 'object') {
+      ResolvedFactory = Factory.type || Object;
+      decorator = Factory.decorator || decorator;
+      construct = Factory.construct || construct;
+    }
+
+    if (Object.is(ResolvedFactory, Symbol) || Object.is(ResolvedFactory, Function)) {
+      construct = false;
+    }
+
+    if (construct) {
+      return (new ResolvedFactory(value))[decorator]();
+    }
+    return ResolvedFactory(value)[decorator]();
   }
 
   /**
