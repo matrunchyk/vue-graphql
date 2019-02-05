@@ -263,11 +263,16 @@ class BaseModel {
         if (!Array.isArray(origAttrValue)) {
           throw new InvalidArgumentException(`Attribute "${attrName}" has type Array, but class property doesn't.`);
         }
-        this[attrName] = origAttrValue.map(el => (new AttrValue(el)).valueOf());
+        this[attrName] = origAttrValue.map(el => this.processAttribute(AttrValue, el));
       } else {
-        this[attrName] = (new AttrValue(origAttrValue)).valueOf();
+        this[attrName] = this.processAttribute(AttrValue, origAttrValue);
       }
     });
+  }
+
+  // noinspection JSMethodCanBeStatic
+  processAttribute(Factory, value) {
+    return (new Factory(value)).valueOf();
   }
 
   /**
