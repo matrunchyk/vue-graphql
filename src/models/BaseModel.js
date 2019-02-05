@@ -37,6 +37,7 @@ class BaseModel {
   defaultSortBy = 'uuid';
   primaryKey = 'uuid';
   dataKey = '';
+  _originalResult = null;
   vue = {};
   initialState = {};
   isDirty = false;
@@ -444,6 +445,8 @@ class BaseModel {
         subscribeToMore,
       });
 
+      this._originalResult = result;
+
       if (!wantsMany && Array.isArray(result)) {
         throw new ServerErrorException('Was expected an object but received an array.');
       }
@@ -699,6 +702,8 @@ class BaseModel {
     variables,
   }, props) {
 
+    this._originalResult = props;
+
     if (this.propagateChanges) {
       defineProperties(this, props);
     }
@@ -713,7 +718,13 @@ class BaseModel {
    * Triggers when error on error
    * @param e
    */
-  failed(e) {}
+  failed(e) {
+    this._originalResult = null;
+  }
+
+  toJSON() {
+    return this._originalResult;
+  }
 }
 
 export default BaseModel;
