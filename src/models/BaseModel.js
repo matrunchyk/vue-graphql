@@ -143,6 +143,10 @@ class BaseModel {
     return this.dataKey || to.camel(this.className);
   }
 
+  get raw() {
+    return this._originalResult;
+  }
+
   /**
    * Finds a single model item
    *
