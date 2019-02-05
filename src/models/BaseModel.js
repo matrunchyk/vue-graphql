@@ -457,8 +457,6 @@ class BaseModel {
         throw new ServerErrorException('Was expected an array but received an object.');
       }
 
-      this._result = result;
-
       if (wantsMany || Array.isArray(result)) {
         const resCol = new Collection(result);
         const filtered = resCol.filter(s => s);
@@ -466,7 +464,10 @@ class BaseModel {
         return filtered.sortBy(this.defaultSortBy).map(i => this.hydrate(i));
       }
 
-      return this.hydrate(cloneDeep(result));
+      return this.hydrate({
+        ...cloneDeep(result),
+        _result: result,
+      });
     } catch (e) {
       this.setError(e);
       this.failed(e);
