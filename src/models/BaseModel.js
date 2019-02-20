@@ -1,20 +1,18 @@
 import Vue from 'vue';
+import gql from 'graphql-tag';
 import to from 'to-case';
 import * as pluralize from 'pluralize';
 import {
   spawn,
-  getGQLDocumentName,
-  getGQLDocument,
   defineProperties,
   cloneDeep,
   pickModelVariables,
+  getGQLDocumentName
 } from '../lib/utils';
 import ConfigurationException from './Exceptions/ConfigurationException';
 import ServerErrorException from './Exceptions/ServerResponseException';
 import Collection from './Collection';
 import InvalidArgumentException from './Exceptions/InvalidArgumentException';
-
-const gqlCache = {};
 
 /**
  * Class BaseModel
@@ -22,15 +20,6 @@ const gqlCache = {};
 class BaseModel {
   __typename = 'BaseModel';
   _documentsLoaded = false;
-  mutationCreate = {};
-  mutationUpdate = {};
-  mutationDelete = {};
-  mutationAttach = {};
-  mutationDetach = {};
-  query = {};
-  queryMany = {};
-  subscriptions = [];
-  subscriptionsMany = [];
   loading = false;
   error = null;
   defaultSortBy = 'uuid';
@@ -42,10 +31,11 @@ class BaseModel {
   isDirty = false;
   uncountables = [];
   propagateChanges = true;
-  saveVariables = [];
-  updateVariables = [];
   flattenVariables = false;
   attributes = {};
+  queryVariables = {};
+  createVariables = [];
+  updateVariables = [];
 
   /**
    * Class constructor
@@ -92,7 +82,7 @@ class BaseModel {
    * @returns {*|{}}
    */
   get getCreateVariables() {
-    return pickModelVariables(this, this.saveVariables);
+    return pickModelVariables(this, this.createVariables);
   }
 
   /**
@@ -152,11 +142,8 @@ class BaseModel {
    * @param variables
    * @returns {Promise<{BaseModel}>}
    */
-  static async find(variables = {}) {
-    const instance = this.empty(false);
-
-    await instance.loadDocuments();
-    return instance.fetch(instance.query, variables);
+  static async findOne(variables = {}) {
+    return this.empty(false).findOne(variables);
   }
 
   /**
@@ -165,11 +152,8 @@ class BaseModel {
    * @property {Object} variables - variables to filter
    * @returns {Promise<{BaseModel[]}>}
    */
-  static async get(variables = {}) {
-    const instance = this.empty(false);
-
-    await instance.loadDocuments();
-    return instance.fetchMany(instance.queryMany, variables);
+  static async findMany(variables = {}) {
+    return this.empty(false).findMany(variables);
   }
 
   /**
@@ -188,7 +172,7 @@ class BaseModel {
    *
    * @returns {BaseModel}
    */
-  static empty(boot = true) {
+  static empty(boot = false) {
     // noinspection JSValidateTypes
     return spawn(this, [{ boot }]);
   }
@@ -303,24 +287,18 @@ class BaseModel {
     return state;
   }
 
-  gqlLoader(path) {
-    if (typeof Vue.prototype.$vgmOptions.gqlLoader !== 'function') {
-      return Promise.reject(`Unable to load "${path}": gqlLoader is not configured.
-        Please make sure that 'BaseModel.gqlLoader(path)' method is overriden in your local BaseModel
-        and returns lazy-loaded GQL document. See library example for reference.`);
-    }
-    return Vue.prototype.$vgmOptions.gqlLoader(path);
-  }
-
   /**
    * Finds a single model item
    *
    * @property {Object} variables - variables to filter
    * @returns {Promise<{BaseModel[]}>}
    */
-  async find(variables = {}) {
-    await this.loadDocuments();
-    return this.fetch(this.query, variables);
+  async findOne(variables = {}) {
+    const normalizedVariables = this.queryVariables || variables;
+    const opName = `fetch${this.className}`;
+    const query = this.buildQuery('query', opName, normalizedVariables);
+
+    return this.fetch(query, normalizedVariables, false, opName);
   }
 
   /**
@@ -329,9 +307,12 @@ class BaseModel {
    * @property {Object} variables - variables to filter
    * @returns {Promise<{BaseModel[]}>}
    */
-  async get(variables = {}) {
-    await this.loadDocuments();
-    return this.fetch(this.queryMany, variables);
+  async findMany(variables = {}) {
+    const normalizedVariables = this.queryVariables || variables;
+    const opName = `fetch${this.className}`;
+    const query = this.buildQuery('query', opName, normalizedVariables);
+
+    return this.fetch(query, normalizedVariables, true, opName);
   }
 
   /**
@@ -348,9 +329,10 @@ class BaseModel {
       {
         [this.inputDataKey]: prepared,
       };
+    const opName = `update${this.className}`;
+    const query = this.buildQuery('mutation', opName, variables);
 
-    await this.loadDocuments();
-    return this.save(this.mutationUpdate, variables);
+    return this.save(query, variables, opName);
   }
 
   /**
@@ -389,9 +371,10 @@ class BaseModel {
    *
    * @param mutation
    * @param variables
+   * @param opName
    * @returns {Promise<BaseModel>}
    */
-  async save(mutation, variables = {}) {
+  async save(mutation, variables = {}, opName) {
     if (typeof this.vue !== 'object') {
       throw new ConfigurationException(`Vue instance must be VueComponent.
       Make sure that BaseModel.vue contains your local vue instance.`);
@@ -401,7 +384,6 @@ class BaseModel {
       throw new ConfigurationException(`It seems like vue-apollo is not installed.
       Make sure that you have installed vue-apollo and configured.`);
     }
-    const opName = getGQLDocumentName(mutation, this.className);
 
     // Clears an error
     this.setError();
@@ -411,18 +393,12 @@ class BaseModel {
     this.touch();
 
     try {
-      // noinspection JSUnresolvedFunction
       /**
        * Perform a mutation
        */
       await this.vue.$apollo.mutate({
         mutation,
         variables,
-        // optimisticResponse: {
-        //   __typename: 'Mutation',
-        //   [opName]: this,
-        // },
-        // Run hooks
         update: (store, { data }) => this.saved({
           store,
           query: mutation,
@@ -443,13 +419,8 @@ class BaseModel {
     return this;
   }
 
-  async fetchMany(query, variables = {}) {
-    return this.fetch(query, variables, true);
-  }
-
-  async fetch(query, variables = {}, wantsMany = false) {
+  async fetch(query, variables, wantsMany, opName) {
     const { subscribeToMore } = this;
-    const opName = getGQLDocumentName(query, this.className);
 
     // Clears an error
     this.setError();
@@ -468,11 +439,19 @@ class BaseModel {
       });
 
       if (!wantsMany && Array.isArray(result)) {
-        throw new ServerErrorException('Was expected an object but received an array.');
+        const e = new ServerErrorException('Was expected an object but received an array.');
+
+        this.setError(e);
+        this.failed(e);
+        throw e;
       }
 
       if (wantsMany && !Array.isArray(result)) {
-        throw new ServerErrorException('Was expected an array but received an object.');
+        const e = new ServerErrorException('Was expected an array but received an object.');
+
+        this.setError(e);
+        this.failed(e);
+        throw e;
       }
 
       if (wantsMany || Array.isArray(result)) {
@@ -486,10 +465,6 @@ class BaseModel {
         ...cloneDeep(result),
         _result: result,
       });
-    } catch (e) {
-      this.setError(e);
-      this.failed(e);
-      throw e;
     } finally {
       this.setLoading(false);
       this.finished();
@@ -533,28 +508,6 @@ class BaseModel {
     return subscribeToMore;
   }
 
-  async attach(models) {
-    const m = Array.isArray(models) ? models : [models];
-
-    await this.loadDocuments();
-
-    return this.save(this.mutationAttach, {
-      [this.primaryKey]: this[this.primaryKey],
-      [this.inputDataKey]: m.map(m => m[m.primaryKey]),
-    });
-  }
-
-  async detach(models) {
-    const m = Array.isArray(models) ? models : [models];
-
-    await this.loadDocuments();
-
-    return this.save(this.mutationDetach, {
-      [this.primaryKey]: this[this.primaryKey],
-      [this.inputDataKey]: m.map(m => m[m.primaryKey]),
-    });
-  }
-
   // Helpers
   touch() {
     this.updatedAt = new Date();
@@ -587,55 +540,6 @@ class BaseModel {
   }
 
   init() {}
-
-  async loadDocuments() {
-    if (this._documentsLoaded) {
-      return Promise.resolve();
-    }
-
-    return new Promise(async (resolve, reject) => {
-      const entityNamePlural = pluralize(this.className);
-      const gqlSrc = to.camel(entityNamePlural);
-
-      try {
-        await this.getCachedGql('query', `${gqlSrc}/queries/fetch${this.className}`);
-        await this.getCachedGql('queryMany', `${gqlSrc}/queries/fetch${entityNamePlural}`);
-        await this.getCachedGql('mutationCreate', `${gqlSrc}/mutations/create${this.className}`);
-        await this.getCachedGql('mutationUpdate', `${gqlSrc}/mutations/update${this.className}`);
-        await this.getCachedGql('mutationDelete', `${gqlSrc}/mutations/delete${this.className}`);
-        await this.getCachedGql('mutationAttach', `${gqlSrc}/mutations/attach${this.className}`);
-        await this.getCachedGql('mutationDetach', `${gqlSrc}/mutations/detach${this.className}`);
-
-        this._documentsLoaded = true;
-        resolve();
-      } catch (e) {
-        reject(e);
-      }
-    });
-  }
-
-  /**
-   * Retrieves cached GQL document from a local cache and adds it of it doesn't there yet.
-   *
-   * @param propName {string}
-   * @param path {string}
-   * @returns {Promise<void>}
-   */
-  async getCachedGql(propName, path) {
-    if (this[propName] === false) {
-      return;
-    }
-    if ((!this[propName] || !this[propName].definitions)) {
-      if (!gqlCache[path]) {
-        gqlCache[path] = await getGQLDocument(
-          this.gqlLoader,
-          path
-        );
-      }
-
-      this[propName] = gqlCache[path];
-    }
-  }
 
   prepareVariables(selection) {
     const inputFields = Object.keys(selection);
@@ -743,6 +647,32 @@ class BaseModel {
 
   toJSON() {
     return this._result;
+  }
+
+  toQueryString() {
+    return `{ ${(Object.keys(this.schema).map((key) => {
+      const parent = this.schema[key].type || this.schema[key];
+
+      return parent instanceof BaseModel ? `\n${key}${parent.toQueryString()}` : `\n${key}`;
+    }))} }`;
+  }
+
+  buildTypedVariables(variables) {
+    return variables.map((key) => {
+      const type = (variables[key] || {}).type || variables[key];
+      const isRequired = (variables[key] || {}).required || false;
+
+      return `$${key}: ${type}${isRequired ? '!' : ''}`;
+    }).join(', ');
+  }
+
+  buildQuery(type, name, variables = null) {
+    const body = this.toQueryString();
+    const typedVars = this.buildTypedVariables(variables);
+    const mappedVars = variables.map((key) => `${key}: $${key}`).join(', ');
+    const gqlString = `${type} ${name}(${typedVars}) { ${name}(${mappedVars}) ${body} }`;
+
+    return gql`${gqlString}`;
   }
 }
 

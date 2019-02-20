@@ -1,5 +1,4 @@
 import Vue from 'vue';
-import Exceptions from '../models/Exceptions';
 import pkg from '../../package';
 import InvalidArgumentException from '../models/Exceptions/InvalidArgumentException';
 
@@ -25,102 +24,6 @@ function isDebug() {
  */
 function version() {
   return pkg.version;
-}
-
-/**
- * Returns true if mobile environment
- *
- * @returns {boolean}
- */
-/* istanbul ignore next */
-function isMobile/* istanbul ignore next */() {
-  return !!navigator.userAgent.match(/(iPad)|(iPhone)|(iPod)|(android)|(webOS)/i);
-}
-
-/* Strings */
-
-/**
- * Capitalizes first letters of each word
- * @param str {string} A string to be processed
- * @returns {string}
- * @example
- * ucwords('This is a test') // This Is A Test
- * ucwords('This IS a TEST') // This IS A TEST
- */
-function ucwords(str) {
-  return `${str}`.replace(/^(.)|\s+(.)/g, $1 => $1.toUpperCase());
-}
-
-/**
- * Makes first letter of str lowercase
- *
- * @param str {string} A string to be processed
- * @returns {string}
- * @example
- * lowerCaseFirst('This is a test') // this Is a test
- * lowerCaseFirst('THIS IS a TEST') // tHIS IS a TEST
- * lowerCaseFirst('THIS IS') // tHIS IS
- */
-function lowerCaseFirst(str) {
-  return str.charAt(0).toLowerCase() + str.slice(1);
-}
-
-/**
- * Formats bytes to human readable string
- *
- * @param bytes {number} Bytes to be formatted
- * @returns {string}
- * @example
- * humanBytes(0); // 0.0 B
- * humanBytes(1234); // 1.21 KB
- * humanBytes(1234567890); // 1.15 GB
- */
-function humanBytes(bytes) {
-  if (bytes === 0) { return '0.00 B'; }
-  const e = Math.floor(Math.log(bytes) / Math.log(1024));
-
-  return `${(bytes / (1024 ** e)).toFixed(2)} ${' KMGTP'.charAt(e)}B`.replace('  ', ' ');
-}
-
-/* HTTP */
-
-/**
- * Makes HTTP POST call with payload and returns parses JSON
- *
- * @param url {string} URL to be submitted on
- * @param data {object} Data to be submitted to
- * @returns {Promise<Response>}
- */
-function httpPost(url, data) {
-  return fetch(url, {
-    method: 'post',
-    body: JSON.stringify(data)
-  }).then(response => response.json());
-}
-
-/* Core */
-/**
- * Lazy loads a graphql document
- *
- * @param loader {function}
- * @param path {string} A path to the document
- * @returns {Promise<{doc: *} | never>}
- */
-function getGQLDocument(loader, path) {
-  const segments = path.split('/');
-  const docName = segments[segments.length - 1];
-
-  return loader(path)
-    .catch(() => {
-      return {
-        [docName]: {
-          __fake: true,
-        },
-      };
-    })
-    .then(({ [docName]: doc }) => {
-      return doc;
-    });
 }
 
 /**
@@ -394,8 +297,7 @@ function getGQLDocumentName(document, callerClass = 'model class') {
     !Array.isArray(document.definitions) ||
     !document.definitions.length
   ) {
-    throw new Exceptions.InvalidArgumentException(`Invalid GraphQL document specified.
-    Did you forget to add query or mutation to ${callerClass}?`);
+    throw new InvalidArgumentException('Invalid GraphQL document specified.');
   }
   const definition = document.definitions.find(def => def.kind === 'OperationDefinition');
 
@@ -426,59 +328,15 @@ function defineProperties(source = {}, target = {}) {
   Object.assign(target, Object.defineProperties(source, Object.getOwnPropertyDescriptors(target)));
 }
 
-/* File */
-/**
- * Returns a Promise with Array Buffer read from a blob
- *
- * @param file {Blob} Blob-like structure to read from
- * @returns {Promise<any>}
- */
-function readFile(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = ({ target: { result } }) => {
-      resolve(result);
-    };
-    reader.onerror = reject;
-    reader.onabort = reject;
-    reader.readAsArrayBuffer(file);
-  });
-}
-
-/**
- * Waits for a certain amount of seconds before resolving.
- * It's useful only when accompanied with await and when it's required to simulate a pause.
- *
- * @param seconds {Number}
- * @returns {Promise<any>}
- * @example
- * async function myFunction() {
- *   await sleep(5);
- *   console.log('Printed after 5 seconds.')
- * }
- */
-function sleep(seconds = 1) {
-  return new Promise(resolve => window.setTimeout(resolve, seconds * 1000));
-}
-
 export {
   isDebug,
   version,
-  isMobile,
-  getGQLDocument,
-  ucwords,
-  lowerCaseFirst,
-  humanBytes,
   sortBy,
   pick,
   pickModelVariables,
   defineProperties,
   getGQLDocumentName,
-  httpPost,
-  readFile,
   spawn,
-  sleep,
   intersect,
   cloneDeep,
   stripTypename,
