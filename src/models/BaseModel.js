@@ -1,4 +1,3 @@
-import Vue from 'vue';
 import gql from 'graphql-tag';
 import to from 'to-case';
 import * as pluralize from 'pluralize';
@@ -18,24 +17,22 @@ import InvalidArgumentException from './Exceptions/InvalidArgumentException';
  * Class BaseModel
  */
 class BaseModel {
-  __typename = 'BaseModel';
-  _documentsLoaded = false;
-  loading = false;
-  error = null;
-  defaultSortBy = 'uuid';
-  primaryKey = 'uuid';
-  dataKey = '';
-  _result = null;
-  vue = {};
-  initialState = {};
-  isDirty = false;
-  uncountables = [];
-  propagateChanges = true;
-  flattenVariables = false;
-  attributes = {};
-  queryVariables = {};
-  createVariables = [];
-  updateVariables = [];
+  // __typename = 'BaseModel';
+  // error = null;
+  // defaultSortBy = 'uuid';
+  // primaryKey = 'uuid';
+  // dataKey = '';
+  // _result = null;
+  // vue = {};
+  // initialState = {};
+  // isDirty = false;
+  // uncountables = [];
+  // propagateChanges = true;
+  // flattenVariables = false;
+  // attributes = {};
+  // queryVariables = {};
+  // createVariables = [];
+  // updateVariables = [];
 
   /**
    * Class constructor
@@ -43,13 +40,10 @@ class BaseModel {
    * @param {Object} params
    */
   constructor(params = {}) {
-    if (Vue.prototype.$vgmOptions) {
-      this.$vgmOptions = Vue.prototype.$vgmOptions;
-    }
+    this.options = BaseModel.options;
+    this.vue = BaseModel.vue;
 
-    this.vue = Object.getPrototypeOf(this).vue;
-
-    if (params && params.boot === false) {
+    if (params.boot === false) {
       return this;
     }
 
@@ -650,8 +644,10 @@ class BaseModel {
   }
 
   toQueryString() {
-    return `{ ${(Object.keys(this.schema).map((key) => {
-      const parent = this.schema[key].type || this.schema[key];
+    const { schema = {} } = this;
+
+    return `{ ${(Object.keys(schema).map((key) => {
+      const parent = schema[key].type || schema[key];
 
       return parent instanceof BaseModel ? `\n${key}${parent.toQueryString()}` : `\n${key}`;
     }))} }`;
