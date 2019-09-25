@@ -31,6 +31,5 @@ node_modules
 .vscode
 
 .DS_Store
-/.nyc_output/*.json
+/.nyc_output/**/*.json
 codecov.yml
-
