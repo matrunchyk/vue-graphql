@@ -7,7 +7,7 @@ import {
   getGQLDocument,
   defineProperties,
   cloneDeep,
-  pickModelVariables,
+  pickModelVariables
 } from '../lib/utils';
 import ConfigurationException from './Exceptions/ConfigurationException';
 import ServerErrorException from './Exceptions/ServerResponseException';
@@ -229,13 +229,13 @@ class BaseModel {
     const name = multiple ? pluralize(this.className) : this.className;
 
     return {
-      name: to.camel(`${prefix}${name}`),
+      name: to.camel(`${ prefix }${ name }`),
       params: {
-        [this.primaryKey]: this[this.primaryKey],
+        [this.primaryKey]: this[this.primaryKey]
       },
       query: {
-        from,
-      },
+        from
+      }
     };
   }
 
@@ -252,7 +252,7 @@ class BaseModel {
       }
 
       // Backup original
-      Object.defineProperty(this, `_${attrName}`, {
+      Object.defineProperty(this, `_${ attrName }`, {
         value,
         writable: false
       });
@@ -260,7 +260,7 @@ class BaseModel {
       // Casting
       if (Array.isArray(Factory)) {
         if (!Array.isArray(value)) {
-          throw new InvalidArgumentException(`Attribute "${attrName}" has type Array, but class property doesn't.`);
+          throw new InvalidArgumentException(`Attribute "${ attrName }" has type Array, but class property doesn't.`);
         }
         this[attrName] = value.map(el => this.processAttribute(Factory[0], el));
       } else {
@@ -272,7 +272,9 @@ class BaseModel {
   // noinspection JSMethodCanBeStatic
   processAttribute(Factory, value) {
     let ResolvedFactory = Factory;
+
     let decorator = 'valueOf';
+
     let construct = true;
 
     if (typeof Factory === 'object') {
@@ -305,7 +307,7 @@ class BaseModel {
 
   gqlLoader(path) {
     if (typeof Vue.prototype.$vgmOptions.gqlLoader !== 'function') {
-      return Promise.reject(`Unable to load "${path}": gqlLoader is not configured.
+      return Promise.reject(`Unable to load "${ path }": gqlLoader is not configured.
         Please make sure that 'BaseModel.gqlLoader(path)' method is overriden in your local BaseModel
         and returns lazy-loaded GQL document. See library example for reference.`);
     }
@@ -341,12 +343,12 @@ class BaseModel {
    */
   async update() {
     const prepared = {
-      ...this.prepareVariables(this.getUpdateVariables),
+      ...this.prepareVariables(this.getUpdateVariables)
     };
     const variables = this.flattenVariables ?
       prepared :
       {
-        [this.inputDataKey]: prepared,
+        [this.inputDataKey]: prepared
       };
 
     await this.loadDocuments();
@@ -365,7 +367,7 @@ class BaseModel {
     const variables = this.flattenVariables ?
       prepared :
       {
-        [this.inputDataKey]: prepared,
+        [this.inputDataKey]: prepared
       };
 
     await this.loadDocuments();
@@ -380,7 +382,7 @@ class BaseModel {
   async delete() {
     await this.loadDocuments();
     return this.save(this.mutationDelete, {
-      [this.primaryKey]: this[this.primaryKey],
+      [this.primaryKey]: this[this.primaryKey]
     });
   }
 
@@ -427,8 +429,8 @@ class BaseModel {
           store,
           query: mutation,
           queryName: opName,
-          variables,
-        }, data[opName]),
+          variables
+        }, data[opName])
       });
 
     } catch (e) {
@@ -464,7 +466,7 @@ class BaseModel {
         errorPolicy: 'all',
         query,
         variables,
-        subscribeToMore,
+        subscribeToMore
       });
 
       if (!wantsMany && Array.isArray(result)) {
@@ -484,7 +486,7 @@ class BaseModel {
 
       return this.hydrate({
         ...cloneDeep(result),
-        _result: result,
+        _result: result
       });
     } catch (e) {
       this.setError(e);
@@ -521,10 +523,10 @@ class BaseModel {
           return {
             [queryName]: [
               ...previousResult[queryName],
-              result,
-            ],
+              result
+            ]
           };
-        },
+        }
       }, normalizedSub);
 
       subscribeToMore.push(subscription);
@@ -540,7 +542,7 @@ class BaseModel {
 
     return this.save(this.mutationAttach, {
       [this.primaryKey]: this[this.primaryKey],
-      [this.inputDataKey]: m.map(m => m[m.primaryKey]),
+      [this.inputDataKey]: m.map(m => m[m.primaryKey])
     });
   }
 
@@ -551,7 +553,7 @@ class BaseModel {
 
     return this.save(this.mutationDetach, {
       [this.primaryKey]: this[this.primaryKey],
-      [this.inputDataKey]: m.map(m => m[m.primaryKey]),
+      [this.inputDataKey]: m.map(m => m[m.primaryKey])
     });
   }
 
@@ -565,7 +567,7 @@ class BaseModel {
   }
 
   refreshCacheAge() {
-    return localStorage.setItem('apollo-cache-persist-age', `${(new Date()).getTime()}`);
+    return localStorage.setItem('apollo-cache-persist-age', `${ (new Date()).getTime() }`);
   }
 
   async validateCache() {
@@ -586,7 +588,8 @@ class BaseModel {
     }
   }
 
-  init() {}
+  init() {
+  }
 
   async loadDocuments() {
     if (this._documentsLoaded) {
@@ -598,13 +601,13 @@ class BaseModel {
       const gqlSrc = to.camel(entityNamePlural);
 
       try {
-        await this.getCachedGql('query', `${gqlSrc}/queries/fetch${this.className}`);
-        await this.getCachedGql('queryMany', `${gqlSrc}/queries/fetch${entityNamePlural}`);
-        await this.getCachedGql('mutationCreate', `${gqlSrc}/mutations/create${this.className}`);
-        await this.getCachedGql('mutationUpdate', `${gqlSrc}/mutations/update${this.className}`);
-        await this.getCachedGql('mutationDelete', `${gqlSrc}/mutations/delete${this.className}`);
-        await this.getCachedGql('mutationAttach', `${gqlSrc}/mutations/attach${this.className}`);
-        await this.getCachedGql('mutationDetach', `${gqlSrc}/mutations/detach${this.className}`);
+        await this.getCachedGql('query', `${ gqlSrc }/queries/fetch${ this.className }`);
+        await this.getCachedGql('queryMany', `${ gqlSrc }/queries/fetch${ entityNamePlural }`);
+        await this.getCachedGql('mutationCreate', `${ gqlSrc }/mutations/create${ this.className }`);
+        await this.getCachedGql('mutationUpdate', `${ gqlSrc }/mutations/update${ this.className }`);
+        await this.getCachedGql('mutationDelete', `${ gqlSrc }/mutations/delete${ this.className }`);
+        await this.getCachedGql('mutationAttach', `${ gqlSrc }/mutations/attach${ this.className }`);
+        await this.getCachedGql('mutationDetach', `${ gqlSrc }/mutations/detach${ this.className }`);
 
         this._documentsLoaded = true;
         resolve();
@@ -718,7 +721,7 @@ class BaseModel {
     store,
     query,
     queryName,
-    variables,
+    variables
   }, props) {
 
     this._result = props;
@@ -731,7 +734,8 @@ class BaseModel {
   /**
    * Triggers on success or failure
    */
-  finished() {}
+  finished() {
+  }
 
   /**
    * Triggers when error on error

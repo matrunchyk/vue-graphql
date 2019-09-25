@@ -1,6 +1,6 @@
 {
   "name": "vue-graphql-models",
-  "version": "2.4.5",
+  "version": "2.4.6",
   "description": "Universal library which helps to build OOP-driven GraphQL based models for Vue components. Influenced by Laravel Eloquent Models & Collections.",
   "main": "lib/vue-graphql-models.js",
   "repository": {
@@ -28,44 +28,44 @@
   },
   "homepage": "https://github.com/digitalideastudio/vue-graphql-models",
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.2.2",
-    "@babel/plugin-proposal-class-properties": "^7.3.0",
-    "@babel/plugin-proposal-export-default-from": "^7.2.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.3.2",
+    "@babel/cli": "^7.6.2",
+    "@babel/core": "^7.6.2",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-export-default-from": "^7.5.2",
+    "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
     "@babel/plugin-syntax-dynamic-import": "^7.2.0",
-    "@babel/preset-env": "^7.3.1",
-    "@babel/register": "^7.0.0",
-    "babel-eslint": "^10.0.1",
-    "babel-loader": "^8.0.5",
-    "babel-plugin-add-module-exports": "^1.0.0",
+    "@babel/preset-env": "^7.6.2",
+    "@babel/register": "^7.6.2",
+    "babel-eslint": "^10.0.3",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-add-module-exports": "^1.0.2",
     "babel-plugin-transform-runtime": "^6.23.0",
-    "bundlesize": "^0.17.1",
+    "bundlesize": "^0.18.0",
     "chai": "^4.2.0",
     "chai-fetch-mock": "^2.0.0",
-    "codecov": "^3.1.0",
-    "collect.js": "^4.6.1",
+    "codecov": "^3.6.1",
+    "collect.js": "^4.16.6",
     "danger": "^6.1.13",
-    "eslint": "^5.13.0",
-    "eslint-loader": "^2.1.2",
-    "fetch-mock": "^7.3.0",
+    "eslint": "^5.16.0",
+    "eslint-loader": "^2.2.1",
+    "fetch-mock": "^7.3.9",
     "filereader": "^0.10.3",
     "istanbul": "^0.4.5",
     "jsdom": "^12.2.0",
     "jsdom-global": "^3.0.2",
-    "lodash": "latest",
+    "lodash": "^4.17.15",
     "mocha": "^5.2.0",
-    "nyc": "^13.2.0",
+    "nyc": "^13.3.0",
     "pluralize": "^7.0.0",
     "to-case": "^2.0.0",
-    "uglifyjs-webpack-plugin": "^2.1.1",
-    "vue": "^2.6.2",
-    "webpack": "^4.29.1",
-    "webpack-cli": "^3.2.3",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "vue": "^2.6.10",
+    "webpack": "^4.41.0",
+    "webpack-cli": "^3.3.9",
     "yargs": "^12.0.5"
   },
   "dependencies": {
-    "idempotent-babel-polyfill": "^7.0.0"
+    "idempotent-babel-polyfill": "^7.4.4"
   },
   "bundlesize": [
     {
@@ -80,5 +80,8 @@
     "test": "NODE_ENV=test nyc --reporter lcovonly --reporter=text --reporter=text-summary mocha && codecov",
     "test:watch": "mocha -w ./test/*.spec.js",
     "filesize": "npm run build && bundlesize"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   }
 }

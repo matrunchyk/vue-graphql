@@ -32,6 +32,7 @@ function version() {
  *
  * @returns {boolean}
  */
+
 /* istanbul ignore next */
 function isMobile/* istanbul ignore next */() {
   return !!navigator.userAgent.match(/(iPad)|(iPhone)|(iPod)|(android)|(webOS)/i);
@@ -48,7 +49,7 @@ function isMobile/* istanbul ignore next */() {
  * ucwords('This IS a TEST') // This IS A TEST
  */
 function ucwords(str) {
-  return `${str}`.replace(/^(.)|\s+(.)/g, $1 => $1.toUpperCase());
+  return `${ str }`.replace(/^(.)|\s+(.)/g, $1 => $1.toUpperCase());
 }
 
 /**
@@ -76,10 +77,12 @@ function lowerCaseFirst(str) {
  * humanBytes(1234567890); // 1.15 GB
  */
 function humanBytes(bytes) {
-  if (bytes === 0) { return '0.00 B'; }
+  if (bytes === 0) {
+    return '0.00 B';
+  }
   const e = Math.floor(Math.log(bytes) / Math.log(1024));
 
-  return `${(bytes / (1024 ** e)).toFixed(2)} ${' KMGTP'.charAt(e)}B`.replace('  ', ' ');
+  return `${ (bytes / (1024 ** e)).toFixed(2) } ${ ' KMGTP'.charAt(e) }B`.replace('  ', ' ');
 }
 
 /* HTTP */
@@ -114,8 +117,8 @@ function getGQLDocument(loader, path) {
     .catch(() => {
       return {
         [docName]: {
-          __fake: true,
-        },
+          __fake: true
+        }
       };
     })
     .then(({ [docName]: doc }) => {
@@ -234,6 +237,7 @@ function sortBy(items, sortOpts = {}) {
 
   return newItems.sort((a, b) => {
     let level = sortKeys.length + 1;
+
     let operand = 0;
 
     sortKeys.some((key) => {
@@ -355,14 +359,15 @@ function pickModelVariables(source = {}, selection = []) {
 
   // If it's not an array (hopefully, it's an object)
   if (!Array.isArray(selection) && typeof selection === 'object') {
-    normalizedSelection = Object.keys(selection).map((k) => ({ [k]: selection[k]}));
-  // If it's something else, than array or object, we won't deal with it
+    normalizedSelection = Object.keys(selection).map((k) => ({ [k]: selection[k] }));
+    // If it's something else, than array or object, we won't deal with it
   } else if (!Array.isArray(selection)) {
     throw new InvalidArgumentException('Selection should be either array or object.');
   }
 
   return normalizedSelection.reduce((obj, variable) => {
     let normalizedVariable = variable;
+
     let normalizedKey = variable;
 
     // If it's a map
@@ -395,7 +400,7 @@ function getGQLDocumentName(document, callerClass = 'model class') {
     !document.definitions.length
   ) {
     throw new Exceptions.InvalidArgumentException(`Invalid GraphQL document specified.
-    Did you forget to add query or mutation to ${callerClass}?`);
+    Did you forget to add query or mutation to ${ callerClass }?`);
   }
   const definition = document.definitions.find(def => def.kind === 'OperationDefinition');
 
@@ -483,5 +488,5 @@ export {
   cloneDeep,
   stripTypename,
   findRecursive,
-  findRouteMetas,
+  findRouteMetas
 };
