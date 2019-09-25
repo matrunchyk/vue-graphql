@@ -1,6 +1,6 @@
 import BaseModel from '../models/BaseModel';
 
-const VueGraphqlModels = {
+const VueGraphql = {
   install(Vue, $vgmOptions = {}) {
     Object.assign(Vue.prototype, {
       $vgmOptions,
@@ -17,4 +17,4 @@ const VueGraphqlModels = {
   }
 };
 
-export default VueGraphqlModels;
+export default VueGraphql;

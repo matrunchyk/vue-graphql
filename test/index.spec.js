@@ -4,9 +4,9 @@ import chai from 'chai';
 import Vue from 'vue';
 import chaiFetchMock from 'chai-fetch-mock';
 import fetchMock from 'fetch-mock';
-import VueGraphqlModels, { BaseModel, Exceptions, Utils } from '../src/index';
+import VueGraphql, { BaseModel, Exceptions, Utils } from '../src/index';
 
-Vue.use(VueGraphqlModels, {
+Vue.use(VueGraphql, {
   dataLoader(path) {
     return import(/* webpackChunkName: "data/[request]" */ `Data/${path}`);
   },

@@ -1,5 +1,5 @@
 // Plugin
-import VueGraphqlModels from './lib/VueGraphqlModels';
+import VueGraphql from './lib/VueGraphql';
 
 // Base
 import BaseModel from './models/BaseModel.js';
@@ -19,10 +19,10 @@ import Collection from './models/Collection';
 // Utils
 import * as Utils from './lib/utils';
 
-export default VueGraphqlModels;
+export default VueGraphql;
 
 export {
-  VueGraphqlModels,
+  VueGraphql,
   BaseModel,
   Exceptions,
   Collection,

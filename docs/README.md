@@ -1,11 +1,11 @@
-# Vue GraphQL Models
+# Vue-GraphQL
 
 Universal library which helps to build OOP-driven GraphQL based models for Vue components.
 Influenced by Laravel Eloquent Models & Collections.
 
-![Travis](https://api.travis-ci.org/digitalideastudio/vue-graphql-models.svg?branch=master)
+![Travis](https://api.travis-ci.org/matrunchyk/vue-graphql.svg?branch=master)
 
-_Note 1. If you looking for v1 of this library, switch to a [relevant branch](https://github.com/digitalideastudio/vue-graphql-models/tree/v1)._
+_Note 1. If you looking for v1 of this library, switch to a [relevant branch](https://github.com/matrunchyk/vue-graphql/tree/v1)._
 
 _Note 2. This library v2 is under development, so the documentation will be updated as soon as it stabilized (soon). Thank you for being patient. Please give me a star if you want to support me doing this._  
 
@@ -28,16 +28,16 @@ _Note 2. This library v2 is under development, so the documentation will be upda
 
 ## Installation
 
-`npm i vue-graphql-models -S`
+`npm i vue-graphql -S`
 
 or
 
-`yarn add vue-graphql-models`
+`yarn add vue-graphql`
 
 ## Configuration
 
 ```
-import VueGraphqlModels from 'vue-graphql-models';
+import VueGraphqlModels from 'vue-graphql';
 
 Vue.use(VueGraphqlModels);
 ```
@@ -46,7 +46,7 @@ Vue.use(VueGraphqlModels);
 #### 1. Define your model:
 
 ```
-import { BaseModel } from 'vue-graphql-models';
+import { BaseModel } from 'vue-graphql';
 
 export default class Fruit extends BaseModel {
  // Your additional logic, if needed
@@ -113,7 +113,7 @@ Intro:
 > Fruit.js
 
 ```
-import { BaseModel } from 'vue-graphql-models';
+import { BaseModel } from 'vue-graphql';
 
 class Fruit extends BaseModel {
   // Getters

@@ -1,11 +1,11 @@
 {
-  "name": "vue-graphql-models",
+  "name": "vue-graphql",
   "version": "2.4.6",
   "description": "Universal library which helps to build OOP-driven GraphQL based models for Vue components. Influenced by Laravel Eloquent Models & Collections.",
-  "main": "lib/vue-graphql-models.js",
+  "main": "lib/vue-graphql.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/digitalideastudio/vue-graphql-models.git"
+    "url": "https://github.com/matrunchyk/vue-graphql.git"
   },
   "keywords": [
     "oop",
@@ -24,9 +24,9 @@
   "author": "Serhii Matrunchyk",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/digitalideastudio/vue-graphql-models/issues"
+    "url": "https://github.com/matrunchyk/vue-graphql/issues"
   },
-  "homepage": "https://github.com/digitalideastudio/vue-graphql-models",
+  "homepage": "https://github.com/matrunchyk/vue-graphql",
   "devDependencies": {
     "@babel/cli": "^7.6.2",
     "@babel/core": "^7.6.2",
@@ -69,8 +69,8 @@
   },
   "bundlesize": [
     {
-      "name": "vue-graphql-models",
-      "path": "./lib/vue-graphql-models.min.js",
+      "name": "vue-graphql",
+      "path": "./lib/vue-graphql.min.js",
       "maxSize": "40 kb"
     }
   ],
