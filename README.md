@@ -1,3 +1,6 @@
+# DEPRECATED
+Migrated to [vue-opp](https://github.com/matrunchyk/vue-oop) as a part of it! :tada:
+
 # Vue GraphQL Models
 
 Universal library which helps to build OOP-driven GraphQL based models for Vue components.
